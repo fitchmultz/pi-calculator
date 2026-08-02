@@ -1,0 +1,33 @@
+{
+  "name": "pi-calculator",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Deterministic high-precision calculator tool for Pi",
+  "type": "module",
+  "keywords": [
+    "pi-package",
+    "pi",
+    "calculator",
+    "decimal"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fitchmultz/pi-calculator.git"
+  },
+  "scripts": {
+    "check": "node --experimental-strip-types check.ts"
+  },
+  "pi": {
+    "extensions": [
+      "./index.ts"
+    ]
+  },
+  "dependencies": {
+    "decimal.js": "10.6.0",
+    "expr-eval-fork": "3.0.3"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-ai": "*",
+    "@earendil-works/pi-coding-agent": "*"
+  }
+}
