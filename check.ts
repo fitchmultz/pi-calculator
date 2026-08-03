@@ -35,14 +35,25 @@ for (const [expression, expected] of cases) {
 	}
 }
 
-for (const bad of ["", "({}).constructor", "1001!", "a".repeat(5000)]) {
+function expectFailure(expression: string, expectedMessage?: string): void {
 	try {
-		evaluateExpression(bad);
-		throw new Error(`expected failure for: ${bad.slice(0, 20)}`);
+		evaluateExpression(expression);
 	} catch (error) {
 		if (!(error instanceof Error)) throw error;
+		if (expectedMessage && !error.message.includes(expectedMessage)) {
+			throw new Error(`expected "${expectedMessage}" for "${expression}", got "${error.message}"`);
+		}
+		return;
 	}
+	throw new Error(`expected failure for: ${expression.slice(0, 20)}`);
 }
+
+for (const bad of ["", "({}).constructor", "a".repeat(5000)]) expectFailure(bad);
+
+const rejectionStarted = performance.now();
+expectFailure("999999999999!", "factorial operand too large");
+const rejectionMs = performance.now() - rejectionStarted;
+if (rejectionMs > 1000) throw new Error(`huge factorial rejection took ${rejectionMs.toFixed(0)}ms`);
 
 const boundary = evaluateExpression("1000!");
 if (!boundary.formatted) throw new Error("expected 1000! to remain supported");
