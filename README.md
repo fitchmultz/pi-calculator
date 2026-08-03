@@ -8,7 +8,7 @@ A deterministic, 40-digit precision calculator tool for [Pi](https://github.com/
 pi install git:github.com/fitchmultz/pi-calculator
 ```
 
-The package adds a `calculator` tool for arithmetic, powers, roots, logarithms, trigonometry, percentages, factorials up to 1000, and basic statistics.
+The package adds a `calculator` tool for arithmetic, powers, roots, logarithms, trigonometry, percentages, factorials (operands 0 through 1000, sharing a 1000-step budget per expression), and basic statistics.
 
 Examples:
 

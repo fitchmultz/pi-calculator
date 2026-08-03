@@ -57,5 +57,36 @@ if (rejectionMs > 1000) throw new Error(`huge factorial rejection took ${rejecti
 
 const boundary = evaluateExpression("1000!");
 if (!boundary.formatted) throw new Error("expected 1000! to remain supported");
+if (evaluateExpression("fac(5)").formatted !== "120") throw new Error("expected fac(5) === 120");
+expectFailure("fac(1001)", "factorial operand too large");
+expectFailure(`sum(map(fac, [${Array(1001).fill(0).join(",")}]))`, "factorial work budget exceeded");
+
+// Nested map/filter amplifies capped ! / fac calls; cumulative budget must reject quickly.
+let nested = `[${Array(20).fill(0).join(",")}]`;
+while (true) {
+	const next = `map(!, filter(!, ${nested}))`;
+	if (next.length > 4096) break;
+	nested = next;
+}
+if (nested.length < 4000) throw new Error(`nested payload too short (${nested.length}); expected near 4096`);
+const nestedStarted = performance.now();
+let nestedSucceeded = false;
+try {
+	evaluateExpression(nested);
+	nestedSucceeded = true;
+} catch (error) {
+	if (!(error instanceof Error)) throw error;
+	if (!error.message.includes("factorial work budget exceeded")) {
+		throw new Error(`expected budget rejection, got "${error.message}"`);
+	}
+}
+if (nestedSucceeded) throw new Error("expected nested map/filter factorial amplification to fail");
+const nestedMs = performance.now() - nestedStarted;
+if (nestedMs > 1000) throw new Error(`nested factorial amplification rejection took ${nestedMs.toFixed(0)}ms`);
+
+// A rejected evaluation must not poison the next call.
+if (evaluateExpression("5!").formatted !== "120") {
+	throw new Error("factorial budget leaked across evaluations");
+}
 
 console.log(`pi-calculator check ok (${cases.length} cases)`);

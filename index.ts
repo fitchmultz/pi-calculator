@@ -13,7 +13,7 @@ const calculatorTool = defineTool({
 		"Powers: `^` or `**`. Constants: PI, E. Natural log: log() or ln(). Base 10: log10().",
 		"Trig uses radians. Convert with deg(90) or multiply degrees by PI/180.",
 		"Percent of a value: `200 * 15 / 100` or `percent(15, 200)`.",
-		"Factorial: `n!`, where n is an integer from 0 through 1000.",
+		"Factorial: `n!` or `fac(n)`; n is an integer from 0 through 1000. All factorials in one expression share a 1000-step work budget.",
 		"Stats: mean([...]), median([...]), stdev([...]) population, stdevs([...]) sample.",
 	],
 	parameters: Type.Object({

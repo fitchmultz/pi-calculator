@@ -24,6 +24,10 @@ const decimalUnary: Record<string, (x: Decimal) => Decimal> = {
 
 const MAX_EXPRESSION_LENGTH = 4096;
 const MAX_FACTORIAL_OPERAND = 1000;
+// One max-sized factorial (or many smaller ones) per evaluation.
+const MAX_FACTORIAL_WORK = MAX_FACTORIAL_OPERAND;
+
+let factorialWorkLeft = 0;
 
 const parser = new Parser({
 	operators: {
@@ -47,14 +51,21 @@ parser.binaryOps["/"] = (a, b) => wrap(toDec(a).div(toDec(b)));
 parser.binaryOps["%"] = (a, b) => wrap(toDec(a).mod(toDec(b)));
 parser.binaryOps["^"] = (a, b) => wrap(toDec(a).pow(toDec(b)));
 
-parser.unaryOps["!"] = (a) => {
+function factorial(a: unknown) {
 	const n = toDec(a);
 	if (!n.isInteger() || n.isNegative()) throw new Error("factorial needs a non-negative integer");
 	if (n.gt(MAX_FACTORIAL_OPERAND)) throw new Error(`factorial operand too large (max ${MAX_FACTORIAL_OPERAND})`);
+	// Charge operand size (min 1) so 0!/1! still consume budget before any multiply loop.
+	const cost = Math.max(n.toNumber(), 1);
+	if (cost > factorialWorkLeft) throw new Error("factorial work budget exceeded");
+	factorialWorkLeft -= cost;
 	let result = new Decimal(1);
 	for (let i = new Decimal(2); i.lte(n); i = i.plus(1)) result = result.mul(i);
 	return wrap(result);
-};
+}
+
+parser.unaryOps["!"] = factorial;
+parser.functions.fac = factorial;
 
 function decimals(values: unknown, name: string, minLength = 1): Decimal[] {
 	if (!Array.isArray(values) || values.length < minLength) {
@@ -133,11 +144,14 @@ export function evaluateExpression(expression: string): {
 	const decimalized = wrapNumericLiterals(normalized);
 
 	let value: unknown;
+	factorialWorkLeft = MAX_FACTORIAL_WORK;
 	try {
 		value = parser.evaluate(decimalized);
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
 		throw new Error(`Invalid expression: ${message}`);
+	} finally {
+		factorialWorkLeft = 0;
 	}
 
 	if (typeof value === "number") value = wrap(new Decimal(String(value)));
