@@ -23,6 +23,7 @@ const decimalUnary: Record<string, (x: Decimal) => Decimal> = {
 };
 
 const MAX_EXPRESSION_LENGTH = 4096;
+const MAX_FACTORIAL_OPERAND = 1000;
 
 const parser = new Parser({
 	operators: {
@@ -49,6 +50,7 @@ parser.binaryOps["^"] = (a, b) => wrap(toDec(a).pow(toDec(b)));
 parser.unaryOps["!"] = (a) => {
 	const n = toDec(a);
 	if (!n.isInteger() || n.isNegative()) throw new Error("factorial needs a non-negative integer");
+	if (n.gt(MAX_FACTORIAL_OPERAND)) throw new Error(`factorial operand too large (max ${MAX_FACTORIAL_OPERAND})`);
 	let result = new Decimal(1);
 	for (let i = new Decimal(2); i.lte(n); i = i.plus(1)) result = result.mul(i);
 	return wrap(result);

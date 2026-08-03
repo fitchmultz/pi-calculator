@@ -35,7 +35,7 @@ for (const [expression, expected] of cases) {
 	}
 }
 
-for (const bad of ["", "({}).constructor", "a".repeat(5000)]) {
+for (const bad of ["", "({}).constructor", "1001!", "a".repeat(5000)]) {
 	try {
 		evaluateExpression(bad);
 		throw new Error(`expected failure for: ${bad.slice(0, 20)}`);
@@ -43,5 +43,8 @@ for (const bad of ["", "({}).constructor", "a".repeat(5000)]) {
 		if (!(error instanceof Error)) throw error;
 	}
 }
+
+const boundary = evaluateExpression("1000!");
+if (!boundary.formatted) throw new Error("expected 1000! to remain supported");
 
 console.log(`pi-calculator check ok (${cases.length} cases)`);
