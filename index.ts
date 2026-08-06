@@ -26,8 +26,9 @@ const calculatorTool = defineTool({
 	async execute(_toolCallId, params) {
 		const { expression } = params;
 		const evaluated = evaluateExpression(expression);
+		const displayExpression = JSON.stringify(evaluated.expression).slice(1, -1);
 		return {
-			content: [{ type: "text", text: `${evaluated.expression} = ${evaluated.formatted}` }],
+			content: [{ type: "text", text: `${displayExpression} = ${evaluated.formatted}` }],
 			details: evaluated,
 		};
 	},

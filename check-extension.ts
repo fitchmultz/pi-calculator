@@ -27,6 +27,16 @@ try {
 		throw new Error(`unexpected calculator result: ${JSON.stringify(result)}`);
 	}
 
+	const multilineInput = { expression: `1${"\n".repeat(4092)}+1` };
+	if (!Value.Check(calculator.parameters, multilineInput)) throw new Error("calculator schema rejected valid multiline input");
+	const multilineResult = await calculator.execute("check-multiline", multilineInput, undefined, undefined, undefined as never);
+	const multilineText = multilineResult.content[0];
+	if (multilineText?.type !== "text") throw new Error("multiline calculator result was not text");
+	if (Buffer.byteLength(multilineText.text) > 50 * 1024 || multilineText.text.split("\n").length > 2000) {
+		throw new Error("multiline calculator result exceeded Pi output limits");
+	}
+	if (!multilineText.text.includes("\\n")) throw new Error("multiline calculator result did not escape line breaks");
+
 	console.log("pi-calculator extension load ok");
 } finally {
 	await rm(agentDir, { recursive: true, force: true });
