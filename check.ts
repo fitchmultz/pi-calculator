@@ -55,6 +55,18 @@ expectFailure("999999999999!", "factorial operand too large");
 const rejectionMs = performance.now() - rejectionStarted;
 if (rejectionMs > 1000) throw new Error(`huge factorial rejection took ${rejectionMs.toFixed(0)}ms`);
 
+const hugeFinite = evaluateExpression("1e1000");
+const roundTripped = JSON.parse(JSON.stringify(hugeFinite)) as typeof hugeFinite;
+if (roundTripped.formatted !== hugeFinite.formatted || "result" in roundTripped) {
+	throw new Error("large finite result did not round-trip safely through JSON");
+}
+
+const largePower = evaluateExpression("2^1000000");
+if (largePower.formatted.length > 50_000) {
+	throw new Error(`large power output exceeded 50KB (${largePower.formatted.length} chars)`);
+}
+if (!largePower.formatted.includes("e+")) throw new Error("expected large power output in scientific notation");
+
 const boundary = evaluateExpression("1000!");
 if (!boundary.formatted) throw new Error("expected 1000! to remain supported");
 if (evaluateExpression("fac(5)").formatted !== "120") throw new Error("expected fac(5) === 120");

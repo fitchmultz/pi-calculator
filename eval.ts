@@ -1,6 +1,6 @@
 import { Parser } from "expr-eval-fork";
 import Decimal from "decimal.js";
-import { formatDecimal, isDecVal, toDec, toNum, wrap, wrapNumericLiterals } from "./decimal.ts";
+import { isDecVal, toDec, toNum, wrap, wrapNumericLiterals } from "./decimal.ts";
 
 const decimalUnary: Record<string, (x: Decimal) => Decimal> = {
 	sin: (x) => Decimal.sin(x),
@@ -22,7 +22,7 @@ const decimalUnary: Record<string, (x: Decimal) => Decimal> = {
 	cbrt: (x) => Decimal.cbrt(x),
 };
 
-const MAX_EXPRESSION_LENGTH = 4096;
+export const MAX_EXPRESSION_LENGTH = 4096;
 const MAX_FACTORIAL_OPERAND = 1000;
 // One max-sized factorial (or many smaller ones) per evaluation.
 const MAX_FACTORIAL_WORK = MAX_FACTORIAL_OPERAND;
@@ -136,7 +136,6 @@ export function evaluateExpression(expression: string): {
 	expression: string;
 	normalized: string;
 	decimalized: string;
-	result: number;
 	exact: string;
 	formatted: string;
 } {
@@ -159,18 +158,16 @@ export function evaluateExpression(expression: string): {
 		throw new Error(`Expression did not evaluate to a number (got ${typeof value})`);
 	}
 
-	const exact = formatDecimal(value.d);
-	const result = value.d.toNumber();
 	if (!value.d.isFinite()) {
 		if (value.d.isNaN()) throw new Error("Result is NaN");
 		throw new Error(value.d.isPositive() ? "Result is Infinity" : "Result is -Infinity");
 	}
+	const exact = value.d.toString();
 
 	return {
 		expression: expression.trim(),
 		normalized,
 		decimalized,
-		result,
 		exact,
 		formatted: exact,
 	};

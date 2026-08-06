@@ -27,13 +27,6 @@ export function toNum(value: unknown): number {
 	return toDec(value).toNumber();
 }
 
-export function formatDecimal(d: Decimal): string {
-	if (!d.isFinite()) throw new Error(d.isNaN() ? "Result is NaN" : d.isPositive() ? "Result is Infinity" : "Result is -Infinity");
-	if (d.isInteger()) return d.toFixed(0);
-	const s = d.toString();
-	return s.includes("e") || s.includes("E") ? s : s.replace(/\.?0+$/, "") || "0";
-}
-
 /** Wrap bare numeric literals as d("…") so parsing never rounds them to float. */
 export function wrapNumericLiterals(expression: string): string {
 	let result = "";
