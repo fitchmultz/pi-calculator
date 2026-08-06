@@ -1,6 +1,6 @@
 import { Parser } from "expr-eval-fork";
 import Decimal from "decimal.js";
-import { formatDecimal, isDecVal, toDec, toNum, wrap, wrapNumericLiterals } from "./decimal.ts";
+import { isDecVal, toDec, toNum, wrap, wrapNumericLiterals } from "./decimal.ts";
 
 const decimalUnary: Record<string, (x: Decimal) => Decimal> = {
 	sin: (x) => Decimal.sin(x),
@@ -158,11 +158,11 @@ export function evaluateExpression(expression: string): {
 		throw new Error(`Expression did not evaluate to a number (got ${typeof value})`);
 	}
 
-	const exact = formatDecimal(value.d);
 	if (!value.d.isFinite()) {
 		if (value.d.isNaN()) throw new Error("Result is NaN");
 		throw new Error(value.d.isPositive() ? "Result is Infinity" : "Result is -Infinity");
 	}
+	const exact = value.d.toString();
 
 	return {
 		expression: expression.trim(),
