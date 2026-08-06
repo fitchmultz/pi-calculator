@@ -22,7 +22,7 @@ const decimalUnary: Record<string, (x: Decimal) => Decimal> = {
 	cbrt: (x) => Decimal.cbrt(x),
 };
 
-const MAX_EXPRESSION_LENGTH = 4096;
+export const MAX_EXPRESSION_LENGTH = 4096;
 const MAX_FACTORIAL_OPERAND = 1000;
 // One max-sized factorial (or many smaller ones) per evaluation.
 const MAX_FACTORIAL_WORK = MAX_FACTORIAL_OPERAND;
@@ -136,7 +136,6 @@ export function evaluateExpression(expression: string): {
 	expression: string;
 	normalized: string;
 	decimalized: string;
-	result: number;
 	exact: string;
 	formatted: string;
 } {
@@ -160,7 +159,6 @@ export function evaluateExpression(expression: string): {
 	}
 
 	const exact = formatDecimal(value.d);
-	const result = value.d.toNumber();
 	if (!value.d.isFinite()) {
 		if (value.d.isNaN()) throw new Error("Result is NaN");
 		throw new Error(value.d.isPositive() ? "Result is Infinity" : "Result is -Infinity");
@@ -170,7 +168,6 @@ export function evaluateExpression(expression: string): {
 		expression: expression.trim(),
 		normalized,
 		decimalized,
-		result,
 		exact,
 		formatted: exact,
 	};

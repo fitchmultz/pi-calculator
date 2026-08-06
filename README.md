@@ -2,6 +2,8 @@
 
 A deterministic, 40-digit precision calculator tool for [Pi](https://github.com/earendil-works/pi).
 
+Requires Pi 0.84.0 or later.
+
 ## Install
 
 ```sh
@@ -22,7 +24,8 @@ mean([2,4,6,8])
 ## Verification
 
 ```sh
-npm run check
+npm install
+npm run verify
 ```
 
 Pi extensions execute with full system access. Review the source before installing.
