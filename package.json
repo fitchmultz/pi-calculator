@@ -1,9 +1,18 @@
 {
   "name": "pi-calculator",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "private": true,
   "description": "Deterministic high-precision calculator tool for Pi",
   "type": "module",
+  "files": [
+    "index.ts",
+    "eval.ts",
+    "decimal.ts",
+    "expr-eval-fork.d.ts",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
   "keywords": [
     "pi-package",
     "pi",

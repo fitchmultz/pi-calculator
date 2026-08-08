@@ -1,71 +1,50 @@
 import { Parser } from "expr-eval-fork";
 import Decimal from "decimal.js";
-import { isDecVal, toDec, toNum, wrap, wrapNumericLiterals } from "./decimal.ts";
-
-const decimalUnary: Record<string, (x: Decimal) => Decimal> = {
-	sin: (x) => Decimal.sin(x),
-	cos: (x) => Decimal.cos(x),
-	tan: (x) => Decimal.tan(x),
-	asin: (x) => Decimal.asin(x),
-	acos: (x) => Decimal.acos(x),
-	atan: (x) => Decimal.atan(x),
-	sqrt: (x) => Decimal.sqrt(x),
-	abs: (x) => Decimal.abs(x),
-	ln: (x) => Decimal.ln(x),
-	log: (x) => Decimal.ln(x),
-	log10: (x) => Decimal.log10(x),
-	log2: (x) => Decimal.log2(x),
-	exp: (x) => Decimal.exp(x),
-	ceil: (x) => Decimal.ceil(x),
-	floor: (x) => Decimal.floor(x),
-	round: (x) => Decimal.round(x),
-	cbrt: (x) => Decimal.cbrt(x),
-};
+import { DECIMAL_PRECISION, decimalizeExpression, isDecVal, toDec, wrap } from "./decimal.ts";
 
 export const MAX_EXPRESSION_LENGTH = 4096;
 const MAX_FACTORIAL_OPERAND = 1000;
-// One max-sized factorial (or many smaller ones) per evaluation.
 const MAX_FACTORIAL_WORK = MAX_FACTORIAL_OPERAND;
+const MAX_ROUND_DIGITS = 1_000_000_000;
+const PI = new Decimal("3.141592653589793238462643383279502884197");
+const E = new Decimal("2.718281828459045235360287471352662497757");
+const GuardDecimal = Decimal.clone({ precision: DECIMAL_PRECISION + 10, rounding: Decimal.ROUND_HALF_UP });
 
 let factorialWorkLeft = 0;
 
 const parser = new Parser({
+	allowMemberAccess: false,
 	operators: {
 		assignment: false,
+		comparison: false,
 		concatenate: false,
+		conditional: false,
+		fndef: false,
+		in: false,
+		logical: false,
 	},
 });
 
-parser.functions.d = (literal: unknown) => {
-	if (typeof literal !== "string") throw new Error("invalid decimal literal");
-	return wrap(new Decimal(literal));
-};
-
-parser.consts.PI = wrap(new Decimal("3.141592653589793238462643383279502884197"));
-parser.consts.E = wrap(new Decimal("2.718281828459045235360287471352662497"));
-
-parser.binaryOps["+"] = (a, b) => wrap(toDec(a).plus(toDec(b)));
-parser.binaryOps["-"] = (a, b) => wrap(toDec(a).minus(toDec(b)));
-parser.binaryOps["*"] = (a, b) => wrap(toDec(a).times(toDec(b)));
-parser.binaryOps["/"] = (a, b) => wrap(toDec(a).div(toDec(b)));
-parser.binaryOps["%"] = (a, b) => wrap(toDec(a).mod(toDec(b)));
-parser.binaryOps["^"] = (a, b) => wrap(toDec(a).pow(toDec(b)));
-
-function factorial(a: unknown) {
-	const n = toDec(a);
-	if (!n.isInteger() || n.isNegative()) throw new Error("factorial needs a non-negative integer");
-	if (n.gt(MAX_FACTORIAL_OPERAND)) throw new Error(`factorial operand too large (max ${MAX_FACTORIAL_OPERAND})`);
-	// Charge operand size (min 1) so 0!/1! still consume budget before any multiply loop.
-	const cost = Math.max(n.toNumber(), 1);
-	if (cost > factorialWorkLeft) throw new Error("factorial work budget exceeded");
-	factorialWorkLeft -= cost;
-	let result = new Decimal(1);
-	for (let i = new Decimal(2); i.lte(n); i = i.plus(1)) result = result.mul(i);
-	return wrap(result);
+function requireArity(name: string, args: unknown[], count: number): void {
+	if (args.length !== count) {
+		throw new Error(`${name}() needs exactly ${count} argument${count === 1 ? "" : "s"}`);
+	}
 }
 
-parser.unaryOps["!"] = factorial;
-parser.functions.fac = factorial;
+function factorial(value: unknown) {
+	const n = toDec(value);
+	if (!n.isInteger() || n.lt(0)) throw new Error("factorial needs a non-negative integer");
+	if (n.gt(MAX_FACTORIAL_OPERAND)) throw new Error(`factorial operand too large (max ${MAX_FACTORIAL_OPERAND})`);
+
+	const count = n.toNumber();
+	const cost = Math.max(count, 1);
+	if (cost > factorialWorkLeft) throw new Error("factorial work budget exceeded");
+	factorialWorkLeft -= cost;
+
+	let result = 1n;
+	for (let i = 2; i <= count; i++) result *= BigInt(i);
+	return wrap(new Decimal(result.toString()).toSignificantDigits(DECIMAL_PRECISION));
+}
 
 function decimals(values: unknown, name: string, minLength = 1): Decimal[] {
 	if (!Array.isArray(values) || values.length < minLength) {
@@ -81,94 +60,230 @@ function decimals(values: unknown, name: string, minLength = 1): Decimal[] {
 	});
 }
 
+function decimalArguments(args: unknown[], name: string): Decimal[] {
+	const values = args.length === 1 && Array.isArray(args[0]) ? args[0] : args;
+	if (values.length === 0) throw new Error(`${name}() needs at least one number`);
+	return values.map((value, index) => {
+		try {
+			return toDec(value);
+		} catch {
+			throw new Error(`${name}(): invalid number at index ${index}`);
+		}
+	});
+}
+
+function sum(xs: Decimal[]): Decimal {
+	return xs.reduce((total, value) => total.plus(value), new Decimal(0));
+}
+
 function variance(xs: Decimal[], sample: boolean): Decimal {
-	const mean = xs.reduce((sum, x) => sum.plus(x), new Decimal(0)).div(xs.length);
-	const sumSq = xs.reduce((sum, x) => sum.plus(x.minus(mean).pow(2)), new Decimal(0));
-	return sumSq.div(sample ? xs.length - 1 : xs.length);
+	const mean = sum(xs).div(xs.length);
+	return sum(xs.map((x) => x.minus(mean).pow(2))).div(sample ? xs.length - 1 : xs.length);
 }
 
-parser.functions.mean = (values: unknown) => {
-	const xs = decimals(values, "mean");
-	return wrap(xs.reduce((sum, x) => sum.plus(x), new Decimal(0)).div(xs.length));
-};
-
-parser.functions.median = (values: unknown) => {
-	const xs = decimals(values, "median").sort((a, b) => a.comparedTo(b));
-	const mid = Math.floor(xs.length / 2);
-	const result = xs.length % 2 === 0 ? xs[mid - 1]!.plus(xs[mid]!).div(2) : xs[mid]!;
-	return wrap(result);
-};
-
-parser.functions.stdev = (values: unknown) => wrap(variance(decimals(values, "stdev"), false).sqrt());
-parser.functions.stdevs = (values: unknown) => wrap(variance(decimals(values, "stdevs", 2), true).sqrt());
-
-parser.functions.percent = (value: unknown, of: unknown) => wrap(toDec(of).times(toDec(value)).div(100));
-
-parser.functions.deg = (degrees: unknown) => wrap(toDec(degrees).times(new Decimal("3.141592653589793238462643383279502884197")).div(180));
-parser.functions.rad = (radians: unknown) => wrap(toDec(radians).times(180).div(new Decimal("3.141592653589793238462643383279502884197")));
-
-parser.unaryOps["+"] = (a: unknown) => wrap(toDec(a));
-parser.unaryOps["-"] = (a: unknown) => wrap(toDec(a).negated());
-
-for (const [name, fn] of Object.entries(decimalUnary)) {
-	parser.unaryOps[name] = (a: unknown) => wrap(fn(toDec(a)));
+function expm1(value: Decimal): Decimal {
+	const x = new GuardDecimal(value.toString());
+	if (x.abs().gte(0.1)) {
+		return new Decimal(GuardDecimal.exp(x).minus(1).toSignificantDigits(DECIMAL_PRECISION).toString());
+	}
+	let term = x;
+	let total = x;
+	for (let n = 2; n <= DECIMAL_PRECISION + 10; n++) {
+		term = term.times(x).div(n);
+		const next = total.plus(term);
+		if (next.eq(total)) break;
+		total = next;
+	}
+	return new Decimal(total.toSignificantDigits(DECIMAL_PRECISION).toString());
 }
 
-parser.functions.min = (...args: unknown[]) => wrap(Decimal.min(...args.map(toDec)));
-parser.functions.max = (...args: unknown[]) => wrap(Decimal.max(...args.map(toDec)));
-parser.functions.hypot = (...args: unknown[]) => {
-	const xs = args.map(toDec);
-	const sumSq = xs.reduce((sum, x) => sum.plus(x.pow(2)), new Decimal(0));
-	return wrap(Decimal.sqrt(sumSq));
-};
-parser.functions.roundTo = (value: unknown, digits: unknown) => wrap(toDec(value).toDecimalPlaces(toNum(digits)));
+function log1p(value: Decimal): Decimal {
+	const x = new GuardDecimal(value.toString());
+	if (x.abs().gte(0.1)) {
+		return new Decimal(GuardDecimal.ln(x.plus(1)).toSignificantDigits(DECIMAL_PRECISION).toString());
+	}
+	let power = x;
+	let total = x;
+	for (let n = 2; n <= DECIMAL_PRECISION + 10; n++) {
+		power = power.times(x);
+		const next = n % 2 === 0 ? total.minus(power.div(n)) : total.plus(power.div(n));
+		if (next.eq(total)) break;
+		total = next;
+	}
+	return new Decimal(total.toSignificantDigits(DECIMAL_PRECISION).toString());
+}
 
-export function normalizeExpression(expression: string): string {
+function roundTo(...args: unknown[]) {
+	requireArity("roundTo", args, 2);
+	const digits = toDec(args[1]);
+	if (!digits.isInteger() || digits.abs().gt(MAX_ROUND_DIGITS)) {
+		throw new Error(`roundTo() digits must be an integer from -${MAX_ROUND_DIGITS} to ${MAX_ROUND_DIGITS}`);
+	}
+	const places = digits.toNumber();
+	const value = toDec(args[0]);
+	if (places >= 0) return wrap(value.toDecimalPlaces(places));
+	const scale = new Decimal(10).pow(-places);
+	return wrap(value.div(scale).toDecimalPlaces(0).times(scale));
+}
+
+function arrayIndex(values: unknown, index: unknown): unknown {
+	if (!Array.isArray(values)) throw new Error("indexing needs an array");
+	const n = toDec(index);
+	if (!n.isInteger()) throw new Error("array index needs an integer");
+	if (n.lt(0) || n.gte(values.length)) throw new Error("array index out of range");
+	return values[n.toNumber()];
+}
+
+const decimalUnary: Record<string, (x: Decimal) => Decimal> = {
+	sin: (x) => Decimal.sin(x),
+	cos: (x) => Decimal.cos(x),
+	tan: (x) => Decimal.tan(x),
+	asin: (x) => Decimal.asin(x),
+	acos: (x) => Decimal.acos(x),
+	atan: (x) => Decimal.atan(x),
+	sinh: (x) => Decimal.sinh(x),
+	cosh: (x) => Decimal.cosh(x),
+	tanh: (x) => Decimal.tanh(x),
+	asinh: (x) => Decimal.asinh(x),
+	acosh: (x) => Decimal.acosh(x),
+	atanh: (x) => Decimal.atanh(x),
+	sqrt: (x) => Decimal.sqrt(x),
+	cbrt: (x) => Decimal.cbrt(x),
+	abs: (x) => Decimal.abs(x),
+	ln: (x) => Decimal.ln(x),
+	log: (x) => Decimal.ln(x),
+	lg: (x) => Decimal.log10(x),
+	log10: (x) => Decimal.log10(x),
+	log2: (x) => Decimal.log2(x),
+	exp: (x) => Decimal.exp(x),
+	expm1,
+	log1p,
+	ceil: (x) => Decimal.ceil(x),
+	floor: (x) => Decimal.floor(x),
+	round: (x) => Decimal.round(x),
+	trunc: (x) => Decimal.trunc(x),
+	sign: (x) => new Decimal(Decimal.sign(x)),
+};
+
+parser.unaryOps = {
+	...Object.fromEntries(Object.entries(decimalUnary).map(([name, fn]) => [name, (value: unknown) => wrap(fn(toDec(value)))])),
+	"+": (value: unknown) => wrap(toDec(value)),
+	"-": (value: unknown) => wrap(toDec(value).negated()),
+	"!": factorial,
+};
+
+parser.binaryOps = {
+	"+": (a, b) => wrap(toDec(a).plus(toDec(b))),
+	"-": (a, b) => wrap(toDec(a).minus(toDec(b))),
+	"*": (a, b) => wrap(toDec(a).times(toDec(b))),
+	"/": (a, b) => wrap(toDec(a).div(toDec(b))),
+	"%": (a, b) => wrap(toDec(a).mod(toDec(b))),
+	"^": (a, b) => wrap(toDec(a).pow(toDec(b))),
+	"[": arrayIndex,
+};
+
+const hypot = (...args: unknown[]) => wrap(Decimal.hypot(...args.map(toDec)));
+
+parser.functions = {
+	d: (...args: unknown[]) => {
+		requireArity("d", args, 1);
+		if (typeof args[0] !== "string" || !/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i.test(args[0])) {
+			throw new Error("invalid decimal literal");
+		}
+		return wrap(new Decimal(args[0]));
+	},
+	fac: (...args: unknown[]) => {
+		requireArity("fac", args, 1);
+		return factorial(args[0]);
+	},
+	pow: (...args: unknown[]) => {
+		requireArity("pow", args, 2);
+		return wrap(toDec(args[0]).pow(toDec(args[1])));
+	},
+	atan2: (...args: unknown[]) => {
+		requireArity("atan2", args, 2);
+		return wrap(Decimal.atan2(toDec(args[0]), toDec(args[1])));
+	},
+	min: (...args: unknown[]) => wrap(Decimal.min(...decimalArguments(args, "min"))),
+	max: (...args: unknown[]) => wrap(Decimal.max(...decimalArguments(args, "max"))),
+	sum: (...args: unknown[]) => {
+		requireArity("sum", args, 1);
+		return wrap(sum(decimals(args[0], "sum")));
+	},
+	hypot,
+	pyt: hypot,
+	roundTo,
+	percent: (...args: unknown[]) => {
+		requireArity("percent", args, 2);
+		return wrap(toDec(args[1]).times(toDec(args[0])).div(100));
+	},
+	deg: (...args: unknown[]) => {
+		requireArity("deg", args, 1);
+		return wrap(toDec(args[0]).times(PI).div(180));
+	},
+	rad: (...args: unknown[]) => {
+		requireArity("rad", args, 1);
+		return wrap(toDec(args[0]).times(180).div(PI));
+	},
+	mean: (...args: unknown[]) => {
+		requireArity("mean", args, 1);
+		const xs = decimals(args[0], "mean");
+		return wrap(sum(xs).div(xs.length));
+	},
+	median: (...args: unknown[]) => {
+		requireArity("median", args, 1);
+		const xs = decimals(args[0], "median").sort((a, b) => a.comparedTo(b));
+		const mid = Math.floor(xs.length / 2);
+		return wrap(xs.length % 2 === 0 ? xs[mid - 1]!.plus(xs[mid]!).div(2) : xs[mid]!);
+	},
+	stdev: (...args: unknown[]) => {
+		requireArity("stdev", args, 1);
+		return wrap(variance(decimals(args[0], "stdev"), false).sqrt());
+	},
+	stdevs: (...args: unknown[]) => {
+		requireArity("stdevs", args, 1);
+		return wrap(variance(decimals(args[0], "stdevs", 2), true).sqrt());
+	},
+};
+
+parser.consts = { PI: wrap(PI), E: wrap(E) };
+
+function normalizeExpression(expression: string): string {
 	const trimmed = expression.trim();
 	if (!trimmed) throw new Error("Expression is empty");
 	if (trimmed.length > MAX_EXPRESSION_LENGTH) {
 		throw new Error(`Expression too long (max ${MAX_EXPRESSION_LENGTH} chars)`);
 	}
-	return trimmed.replace(/\*\*/g, "^");
+	return trimmed;
 }
 
-export function evaluateExpression(expression: string): {
-	expression: string;
-	normalized: string;
-	decimalized: string;
-	exact: string;
-	formatted: string;
-} {
+export function evaluateExpression(expression: string): { expression: string; value: string } {
 	const normalized = normalizeExpression(expression);
-	const decimalized = wrapNumericLiterals(normalized);
-
-	let value: unknown;
+	let result: unknown;
 	factorialWorkLeft = MAX_FACTORIAL_WORK;
 	try {
-		value = parser.evaluate(decimalized);
+		result = parser.evaluate(decimalizeExpression(normalized));
 	} catch (error) {
-		const message = error instanceof Error ? error.message : String(error);
+		let message = error instanceof Error ? error.message : String(error);
+		message = message
+			.replace(/^\[DecimalError\]\s*/, "")
+			.replace(/^parse error \[\d+:\d+\]:\s*/, "")
+			.replace(/\bT[A-Z]+:\s*/g, "");
+		if (error instanceof RangeError && /call stack/i.test(message)) message = "expression is too deeply nested";
 		throw new Error(`Invalid expression: ${message}`);
 	} finally {
 		factorialWorkLeft = 0;
 	}
 
-	if (typeof value === "number") value = wrap(new Decimal(String(value)));
-	if (!isDecVal(value)) {
-		throw new Error(`Expression did not evaluate to a number (got ${typeof value})`);
+	if (typeof result === "number") result = wrap(new Decimal(String(result)));
+	if (!isDecVal(result)) {
+		const type = Array.isArray(result) ? "array" : typeof result;
+		throw new Error(`Expression did not evaluate to a number (got ${type})`);
+	}
+	if (!result.d.isFinite()) {
+		if (result.d.isNaN()) throw new Error("Result is NaN");
+		throw new Error(result.d.isPositive() ? "Result is Infinity" : "Result is -Infinity");
 	}
 
-	if (!value.d.isFinite()) {
-		if (value.d.isNaN()) throw new Error("Result is NaN");
-		throw new Error(value.d.isPositive() ? "Result is Infinity" : "Result is -Infinity");
-	}
-	const exact = value.d.toString();
-
-	return {
-		expression: expression.trim(),
-		normalized,
-		decimalized,
-		exact,
-		formatted: exact,
-	};
+	return { expression: normalized, value: result.d.toString() };
 }

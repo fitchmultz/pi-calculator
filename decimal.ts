@@ -1,6 +1,7 @@
 import Decimal from "decimal.js";
 
-Decimal.set({ precision: 40, rounding: Decimal.ROUND_HALF_UP });
+export const DECIMAL_PRECISION = 40;
+Decimal.set({ precision: DECIMAL_PRECISION, rounding: Decimal.ROUND_HALF_UP });
 
 export type DecVal = { readonly __piDec: true; readonly d: Decimal };
 
@@ -9,7 +10,9 @@ export function wrap(d: Decimal): DecVal {
 }
 
 export function isDecVal(value: unknown): value is DecVal {
-	return typeof value === "object" && value !== null && "__piDec" in value;
+	if (typeof value !== "object" || value === null) return false;
+	const candidate = value as Partial<DecVal>;
+	return candidate.__piDec === true && candidate.d instanceof Decimal;
 }
 
 export function toDec(value: unknown): Decimal {
@@ -23,28 +26,30 @@ export function toDec(value: unknown): Decimal {
 	throw new Error(`expected number, got ${typeof value}`);
 }
 
-export function toNum(value: unknown): number {
-	return toDec(value).toNumber();
-}
-
-/** Wrap bare numeric literals as d("…") so parsing never rounds them to float. */
-export function wrapNumericLiterals(expression: string): string {
+/** Preserve numeric literal precision and normalize ** outside quoted strings. */
+export function decimalizeExpression(expression: string): string {
 	let result = "";
 	let i = 0;
 
 	while (i < expression.length) {
 		const ch = expression[i]!;
 
-		if (ch === '"') {
-			const end = expression.indexOf('"', i + 1);
+		if (ch === '"' || ch === "'") {
+			let end = expression.indexOf(ch, i + 1);
+			while (end >= 0 && expression[end - 1] === "\\") end = expression.indexOf(ch, end + 1);
 			if (end < 0) throw new Error("unclosed string in expression");
 			result += expression.slice(i, end + 1);
 			i = end + 1;
 			continue;
 		}
 
-		const rest = expression.slice(i);
-		const match = rest.match(/^(?:\d+\.\d+|\d+\.|\.\d+|\d+)(?:[eE][+-]?\d+)?/);
+		if (ch === "*" && expression[i + 1] === "*") {
+			result += "^";
+			i += 2;
+			continue;
+		}
+
+		const match = expression.slice(i).match(/^(?:\d+\.\d+|\d+\.|\.\d+|\d+)(?:[eE][+-]?\d+)?/);
 		if (match && (i === 0 || !/[\w.]/.test(expression[i - 1]!))) {
 			result += `d("${match[0]}")`;
 			i += match[0].length;

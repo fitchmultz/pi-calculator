@@ -1,5 +1,6 @@
 import { Type } from "typebox";
 import { defineTool, type ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { DECIMAL_PRECISION } from "./decimal.ts";
 import { evaluateExpression, MAX_EXPRESSION_LENGTH } from "./eval.ts";
 
 const calculatorTool = defineTool({
@@ -8,27 +9,26 @@ const calculatorTool = defineTool({
 	description: "Evaluate numeric and scientific expressions deterministically.",
 	promptSnippet: "Evaluate arithmetic, factorials, percentages, roots, logs, trig, and simple stats",
 	promptGuidelines: [
-		"Use calculator for any non-trivial math instead of computing in prose.",
-		"Calculator uses decimal.js with 40-digit precision for arithmetic, trig, logs, roots, and stats.",
-		"Calculator powers use `^` or `**`; constants are PI and E; natural log is log() or ln(); base 10 is log10().",
-		"Calculator trig uses radians; convert with deg(90) or multiply degrees by PI/180.",
-		"Calculator accepts percentages as `200 * 15 / 100` or `percent(15, 200)`.",
-		"Calculator factorials use `n!` or `fac(n)` for integers from 0 through 1000, sharing a 1000-step budget per expression.",
-		"Calculator stats include mean([...]), median([...]), stdev([...]) for population, and stdevs([...]) for sample.",
+		"Use calculator for non-trivial math instead of computing in prose.",
+		`Calculator uses decimal.js with ${DECIMAL_PRECISION}-digit precision; use ^ or ** for powers, PI and E for constants, and log()/ln(), log2(), or log10() for logarithms.`,
+		"Calculator trig uses radians; deg(90) converts degrees to radians, while rad(PI) converts radians to degrees.",
+		"Calculator supports percent(value, of), n!/fac(n) through 1000 with a shared 1000-step budget, and mean/median/stdev/stdevs arrays.",
 	],
-	parameters: Type.Object({
-		expression: Type.String({
-			minLength: 1,
-			maxLength: MAX_EXPRESSION_LENGTH,
-			description: "Math expression, e.g. '(12.5 * 1.0825) ^ 3', '10!', 'sqrt(144)', 'sin(PI/4)', 'mean([2,4,6,8])",
-		}),
-	}),
+	parameters: Type.Object(
+		{
+			expression: Type.String({
+				minLength: 1,
+				maxLength: MAX_EXPRESSION_LENGTH,
+				description: "Math expression, e.g. '(12.5 * 1.0825) ^ 3', '10!', 'sqrt(144)', 'sin(PI/4)', 'mean([2,4,6,8])'",
+			}),
+		},
+		{ additionalProperties: false },
+	),
 	async execute(_toolCallId, params) {
-		const { expression } = params;
-		const evaluated = evaluateExpression(expression);
+		const evaluated = evaluateExpression(params.expression);
 		const displayExpression = JSON.stringify(evaluated.expression).slice(1, -1);
 		return {
-			content: [{ type: "text", text: `${displayExpression} = ${evaluated.formatted}` }],
+			content: [{ type: "text", text: `${displayExpression} = ${evaluated.value}` }],
 			details: evaluated,
 		};
 	},
