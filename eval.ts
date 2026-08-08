@@ -1,6 +1,5 @@
 import { Parser } from "expr-eval-fork";
-import Decimal from "decimal.js";
-import { DECIMAL_PRECISION, decimalizeExpression, isDecVal, toDec, wrap } from "./decimal.ts";
+import { DECIMAL_PRECISION, Decimal, decimalizeExpression, isDecVal, toDec, wrap, type DecimalValue } from "./decimal.ts";
 
 export const MAX_EXPRESSION_LENGTH = 4096;
 const MAX_FACTORIAL_OPERAND = 1000;
@@ -8,9 +7,14 @@ const MAX_FACTORIAL_WORK = MAX_FACTORIAL_OPERAND;
 const MAX_ROUND_DIGITS = 1_000_000_000;
 const PI = new Decimal("3.141592653589793238462643383279502884197");
 const E = new Decimal("2.718281828459045235360287471352662497757");
-const GuardDecimal = Decimal.clone({ precision: DECIMAL_PRECISION + 10, rounding: Decimal.ROUND_HALF_UP });
+const GuardDecimal = Decimal.clone({
+	defaults: true,
+	precision: DECIMAL_PRECISION + 10,
+	rounding: Decimal.ROUND_HALF_UP,
+});
 
 let factorialWorkLeft = 0;
+const EMPTY_VARIABLES: Record<string, never> = Object.create(null);
 
 const parser = new Parser({
 	allowMemberAccess: false,
@@ -24,6 +28,10 @@ const parser = new Parser({
 		logical: false,
 	},
 });
+
+function nullMap<T extends object>(values: T): T {
+	return Object.assign(Object.create(null), values);
+}
 
 function requireArity(name: string, args: unknown[], count: number): void {
 	if (args.length !== count) {
@@ -46,7 +54,7 @@ function factorial(value: unknown) {
 	return wrap(new Decimal(result.toString()).toSignificantDigits(DECIMAL_PRECISION));
 }
 
-function decimals(values: unknown, name: string, minLength = 1): Decimal[] {
+function decimals(values: unknown, name: string, minLength = 1): DecimalValue[] {
 	if (!Array.isArray(values) || values.length < minLength) {
 		const need = minLength === 1 ? "a non-empty number array" : `at least ${minLength} numbers`;
 		throw new Error(`${name}() needs ${need}`);
@@ -60,7 +68,7 @@ function decimals(values: unknown, name: string, minLength = 1): Decimal[] {
 	});
 }
 
-function decimalArguments(args: unknown[], name: string): Decimal[] {
+function decimalArguments(args: unknown[], name: string): DecimalValue[] {
 	const values = args.length === 1 && Array.isArray(args[0]) ? args[0] : args;
 	if (values.length === 0) throw new Error(`${name}() needs at least one number`);
 	return values.map((value, index) => {
@@ -72,16 +80,16 @@ function decimalArguments(args: unknown[], name: string): Decimal[] {
 	});
 }
 
-function sum(xs: Decimal[]): Decimal {
+function sum(xs: DecimalValue[]): DecimalValue {
 	return xs.reduce((total, value) => total.plus(value), new Decimal(0));
 }
 
-function variance(xs: Decimal[], sample: boolean): Decimal {
+function variance(xs: DecimalValue[], sample: boolean): DecimalValue {
 	const mean = sum(xs).div(xs.length);
 	return sum(xs.map((x) => x.minus(mean).pow(2))).div(sample ? xs.length - 1 : xs.length);
 }
 
-function expm1(value: Decimal): Decimal {
+function expm1(value: DecimalValue): DecimalValue {
 	const x = new GuardDecimal(value.toString());
 	if (x.abs().gte(0.1)) {
 		return new Decimal(GuardDecimal.exp(x).minus(1).toSignificantDigits(DECIMAL_PRECISION).toString());
@@ -97,7 +105,7 @@ function expm1(value: Decimal): Decimal {
 	return new Decimal(total.toSignificantDigits(DECIMAL_PRECISION).toString());
 }
 
-function log1p(value: Decimal): Decimal {
+function log1p(value: DecimalValue): DecimalValue {
 	const x = new GuardDecimal(value.toString());
 	if (x.abs().gte(0.1)) {
 		return new Decimal(GuardDecimal.ln(x.plus(1)).toSignificantDigits(DECIMAL_PRECISION).toString());
@@ -134,7 +142,7 @@ function arrayIndex(values: unknown, index: unknown): unknown {
 	return values[n.toNumber()];
 }
 
-const decimalUnary: Record<string, (x: Decimal) => Decimal> = {
+const decimalUnary: Record<string, (x: DecimalValue) => DecimalValue> = {
 	sin: (x) => Decimal.sin(x),
 	cos: (x) => Decimal.cos(x),
 	tan: (x) => Decimal.tan(x),
@@ -165,14 +173,14 @@ const decimalUnary: Record<string, (x: Decimal) => Decimal> = {
 	sign: (x) => new Decimal(Decimal.sign(x)),
 };
 
-parser.unaryOps = {
+parser.unaryOps = nullMap({
 	...Object.fromEntries(Object.entries(decimalUnary).map(([name, fn]) => [name, (value: unknown) => wrap(fn(toDec(value)))])),
 	"+": (value: unknown) => wrap(toDec(value)),
 	"-": (value: unknown) => wrap(toDec(value).negated()),
 	"!": factorial,
-};
+});
 
-parser.binaryOps = {
+parser.binaryOps = nullMap({
 	"+": (a, b) => wrap(toDec(a).plus(toDec(b))),
 	"-": (a, b) => wrap(toDec(a).minus(toDec(b))),
 	"*": (a, b) => wrap(toDec(a).times(toDec(b))),
@@ -180,11 +188,12 @@ parser.binaryOps = {
 	"%": (a, b) => wrap(toDec(a).mod(toDec(b))),
 	"^": (a, b) => wrap(toDec(a).pow(toDec(b))),
 	"[": arrayIndex,
-};
+});
+parser.ternaryOps = nullMap({});
 
 const hypot = (...args: unknown[]) => wrap(Decimal.hypot(...args.map(toDec)));
 
-parser.functions = {
+parser.functions = nullMap({
 	d: (...args: unknown[]) => {
 		requireArity("d", args, 1);
 		if (typeof args[0] !== "string" || !/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i.test(args[0])) {
@@ -244,9 +253,9 @@ parser.functions = {
 		requireArity("stdevs", args, 1);
 		return wrap(variance(decimals(args[0], "stdevs", 2), true).sqrt());
 	},
-};
+});
 
-parser.consts = { PI: wrap(PI), E: wrap(E) };
+parser.consts = nullMap({ PI: wrap(PI), E: wrap(E) });
 
 function normalizeExpression(expression: string): string {
 	const trimmed = expression.trim();
@@ -262,7 +271,7 @@ export function evaluateExpression(expression: string): { expression: string; va
 	let result: unknown;
 	factorialWorkLeft = MAX_FACTORIAL_WORK;
 	try {
-		result = parser.evaluate(decimalizeExpression(normalized));
+		result = parser.evaluate(decimalizeExpression(normalized), EMPTY_VARIABLES);
 	} catch (error) {
 		let message = error instanceof Error ? error.message : String(error);
 		message = message

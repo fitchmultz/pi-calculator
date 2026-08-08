@@ -1,11 +1,16 @@
-import Decimal from "decimal.js";
+import DecimalBase from "decimal.js";
 
 export const DECIMAL_PRECISION = 40;
-Decimal.set({ precision: DECIMAL_PRECISION, rounding: Decimal.ROUND_HALF_UP });
+export const Decimal = DecimalBase.clone({
+	defaults: true,
+	precision: DECIMAL_PRECISION,
+	rounding: DecimalBase.ROUND_HALF_UP,
+});
+export type DecimalValue = DecimalBase;
 
-export type DecVal = { readonly __piDec: true; readonly d: Decimal };
+export type DecVal = { readonly __piDec: true; readonly d: DecimalValue };
 
-export function wrap(d: Decimal): DecVal {
+export function wrap(d: DecimalValue): DecVal {
 	return { __piDec: true, d };
 }
 
@@ -15,7 +20,7 @@ export function isDecVal(value: unknown): value is DecVal {
 	return candidate.__piDec === true && candidate.d instanceof Decimal;
 }
 
-export function toDec(value: unknown): Decimal {
+export function toDec(value: unknown): DecimalValue {
 	if (isDecVal(value)) return value.d;
 	if (value instanceof Decimal) return value;
 	if (typeof value === "string") return new Decimal(value);
@@ -42,6 +47,8 @@ export function decimalizeExpression(expression: string): string {
 			i = end + 1;
 			continue;
 		}
+
+		if (ch === "/" && expression[i + 1] === "*") throw new Error("comments are not supported");
 
 		if (ch === "*" && expression[i + 1] === "*") {
 			result += "^";

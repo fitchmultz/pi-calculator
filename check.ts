@@ -1,3 +1,4 @@
+import DecimalBase from "decimal.js";
 import { evaluateExpression } from "./eval.ts";
 
 const cases: Array<[string, string]> = [
@@ -78,6 +79,9 @@ for (const [expression, message] of [
 	["gamma(5)", "undefined variable: gamma"],
 	["length(5)", "undefined variable: length"],
 	["map(sqrt,[1,4])", "undefined variable: map"],
+	["constructor(1)", "prototype access detected"],
+	["toString()", "undefined variable: toString"],
+	["hasOwnProperty(1)", "undefined variable: hasOwnProperty"],
 	["PI.d", "member access is not permitted"],
 	["2 + * 3", "unexpected *"],
 	["mean([1,2,)", "unexpected )"],
@@ -90,6 +94,8 @@ for (const [expression, message] of [
 	['d("1\\"2")', "invalid decimal literal"],
 	['d("1**2")', "invalid decimal literal"],
 	['d("0x10")', "invalid decimal literal"],
+	["1/* **/ +1", "comments are not supported"],
+	["1/**/+1", "comments are not supported"],
 	["a".repeat(5000), "Expression too long"],
 ] as const) {
 	expectFailure(expression, message);
@@ -102,6 +108,18 @@ const rejectionMs = performance.now() - rejectionStarted;
 if (rejectionMs > 1000) throw new Error(`factorial rejection took ${rejectionMs.toFixed(0)}ms`);
 
 expectFailure(`${"(".repeat(2047)}1${")".repeat(2047)}`, "expression is too deeply nested");
+
+DecimalBase.set({ precision: 5, toExpPos: 100_000 });
+try {
+	if (evaluateExpression("1/3").value !== "0.3333333333333333333333333333333333333333") {
+		throw new Error("external decimal.js precision leaked into the calculator");
+	}
+	if (evaluateExpression("1e60000").value !== "1e+60000") {
+		throw new Error("external decimal.js formatting leaked into the calculator");
+	}
+} finally {
+	DecimalBase.set({ defaults: true });
+}
 
 const hugeFinite = evaluateExpression("1e1000");
 const roundTripped = JSON.parse(JSON.stringify(hugeFinite)) as typeof hugeFinite;
