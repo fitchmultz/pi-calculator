@@ -1,4 +1,5 @@
 import DecimalBase from "decimal.js";
+import { DECIMAL_PRECISION, Decimal as CalculatorDecimal, MAX_EXPRESSION_DEPTH } from "./decimal.ts";
 import { evaluateExpression } from "./eval.ts";
 
 const cases: Array<[string, string]> = [
@@ -88,12 +89,18 @@ for (const [expression, message] of [
 	["sqrt(", "unexpected EOF"],
 	["fac(5, 6)", "fac() needs exactly 1 argument"],
 	["mean([1,2], [3,4])", "mean() needs exactly 1 argument"],
+	['mean(["0x10"])', "mean(): invalid number at index 0"],
+	['min("0x10")', "min(): invalid number at index 0"],
 	["roundTo(1.5, 2.7)", "roundTo() digits must be an integer"],
 	["[1,2][1.5]", "array index needs an integer"],
+	['[1,2]["constructor"]', "array index needs an integer"],
+	['[1,2]["0x1"]', "array index needs an integer"],
 	["[1,2][2]", "array index out of range"],
 	['d("1\\"2")', "invalid decimal literal"],
 	['d("1**2")', "invalid decimal literal"],
 	['d("0x10")', "invalid decimal literal"],
+	["1e9999999999999999", "decimal literal overflow"],
+	["1e-9999999999999999", "decimal literal underflow"],
 	["1/* **/ +1", "comments are not supported"],
 	["1/**/+1", "comments are not supported"],
 	["a".repeat(5000), "Expression too long"],
@@ -107,7 +114,21 @@ expectFailure(`[${Array(1001).fill("0!").join(",")}]`, "factorial work budget ex
 const rejectionMs = performance.now() - rejectionStarted;
 if (rejectionMs > 1000) throw new Error(`factorial rejection took ${rejectionMs.toFixed(0)}ms`);
 
-expectFailure(`${"(".repeat(2047)}1${")".repeat(2047)}`, "expression is too deeply nested");
+if (evaluateExpression(`${"(".repeat(MAX_EXPRESSION_DEPTH)}1${")".repeat(MAX_EXPRESSION_DEPTH)}`).value !== "1") {
+	throw new Error("expression at the nesting limit failed");
+}
+expectFailure(
+	`${"(".repeat(MAX_EXPRESSION_DEPTH + 1)}1${")".repeat(MAX_EXPRESSION_DEPTH + 1)}`,
+	"expression is too deeply nested",
+);
+
+expectFailure("tan(1e1000000)", "numeric argument exceeds precision limit");
+if (CalculatorDecimal.precision !== DECIMAL_PRECISION || CalculatorDecimal.toExpPos !== 21) {
+	throw new Error("calculator Decimal configuration leaked after a failed evaluation");
+}
+if (evaluateExpression("2/3").value !== "0.6666666666666666666666666666666666666667") {
+	throw new Error("failed evaluation corrupted subsequent calculator precision");
+}
 
 DecimalBase.set({ precision: 5, toExpPos: 100_000 });
 try {

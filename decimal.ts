@@ -1,12 +1,20 @@
 import DecimalBase from "decimal.js";
 
 export const DECIMAL_PRECISION = 40;
-export const Decimal = DecimalBase.clone({
+export const MAX_EXPRESSION_DEPTH = 128;
+const DECIMAL_CONFIG = {
 	defaults: true,
 	precision: DECIMAL_PRECISION,
 	rounding: DecimalBase.ROUND_HALF_UP,
-});
+} as const;
+export const Decimal = DecimalBase.clone(DECIMAL_CONFIG);
 export type DecimalValue = DecimalBase;
+
+export function resetDecimal(): void {
+	Decimal.set(DECIMAL_CONFIG);
+}
+
+const DECIMAL_LITERAL = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i;
 
 export type DecVal = { readonly __piDec: true; readonly d: DecimalValue };
 
@@ -20,10 +28,20 @@ export function isDecVal(value: unknown): value is DecVal {
 	return candidate.__piDec === true && candidate.d instanceof Decimal;
 }
 
+function decimalFromString(value: string): DecimalValue {
+	if (!DECIMAL_LITERAL.test(value)) throw new Error("invalid decimal literal");
+	const decimal = new Decimal(value);
+	if (!decimal.isFinite()) throw new Error("decimal literal overflow");
+	if (decimal.isZero() && /[1-9]/.test(value.replace(/[eE].*$/, ""))) {
+		throw new Error("decimal literal underflow");
+	}
+	return decimal;
+}
+
 export function toDec(value: unknown): DecimalValue {
 	if (isDecVal(value)) return value.d;
 	if (value instanceof Decimal) return value;
-	if (typeof value === "string") return new Decimal(value);
+	if (typeof value === "string") return decimalFromString(value);
 	if (typeof value === "number") {
 		if (!Number.isFinite(value)) throw new Error("non-finite number");
 		return new Decimal(String(value));
@@ -35,6 +53,7 @@ export function toDec(value: unknown): DecimalValue {
 export function decimalizeExpression(expression: string): string {
 	let result = "";
 	let i = 0;
+	let nestingDepth = 0;
 
 	while (i < expression.length) {
 		const ch = expression[i]!;
@@ -49,6 +68,15 @@ export function decimalizeExpression(expression: string): string {
 		}
 
 		if (ch === "/" && expression[i + 1] === "*") throw new Error("comments are not supported");
+
+		if (ch === "(" || ch === "[") {
+			nestingDepth++;
+			if (nestingDepth > MAX_EXPRESSION_DEPTH) {
+				throw new Error(`expression is too deeply nested (max ${MAX_EXPRESSION_DEPTH})`);
+			}
+		} else if ((ch === ")" || ch === "]") && nestingDepth > 0) {
+			nestingDepth--;
+		}
 
 		if (ch === "*" && expression[i + 1] === "*") {
 			result += "^";

@@ -9,7 +9,7 @@
 - Return the requested element for array indexes instead of always coercing wrapped indexes to zero.
 - Preserve single-quoted numeric strings and quoted `**` text during literal rewriting, and reject unsupported comments.
 - Accept negative zero factorials, correctly round factorials once from an exact BigInt result, and reject extra function arguments.
-- Restore the full 40-digit `E` constant and replace raw stack-overflow, parser-token, and rounding errors with stable calculator errors.
+- Restore the full 40-digit `E` constant, reset Decimal state after every evaluation, cap nesting deterministically, and replace raw dependency errors with stable calculator errors.
 - Disable member access and unadvertised conditional, comparison, logical, higher-order, random, and string operations.
 
 ### Changed

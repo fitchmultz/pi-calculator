@@ -1,5 +1,5 @@
 import { Parser } from "expr-eval-fork";
-import { DECIMAL_PRECISION, Decimal, decimalizeExpression, isDecVal, toDec, wrap, type DecimalValue } from "./decimal.ts";
+import { DECIMAL_PRECISION, Decimal, decimalizeExpression, isDecVal, resetDecimal, toDec, wrap, type DecimalValue } from "./decimal.ts";
 
 export const MAX_EXPRESSION_LENGTH = 4096;
 const MAX_FACTORIAL_OPERAND = 1000;
@@ -7,11 +7,12 @@ const MAX_FACTORIAL_WORK = MAX_FACTORIAL_OPERAND;
 const MAX_ROUND_DIGITS = 1_000_000_000;
 const PI = new Decimal("3.141592653589793238462643383279502884197");
 const E = new Decimal("2.718281828459045235360287471352662497757");
-const GuardDecimal = Decimal.clone({
+const GUARD_DECIMAL_CONFIG = {
 	defaults: true,
 	precision: DECIMAL_PRECISION + 10,
 	rounding: Decimal.ROUND_HALF_UP,
-});
+} as const;
+const GuardDecimal = Decimal.clone(GUARD_DECIMAL_CONFIG);
 
 let factorialWorkLeft = 0;
 const EMPTY_VARIABLES: Record<string, never> = Object.create(null);
@@ -136,7 +137,12 @@ function roundTo(...args: unknown[]) {
 
 function arrayIndex(values: unknown, index: unknown): unknown {
 	if (!Array.isArray(values)) throw new Error("indexing needs an array");
-	const n = toDec(index);
+	let n: DecimalValue;
+	try {
+		n = toDec(index);
+	} catch {
+		throw new Error("array index needs an integer");
+	}
 	if (!n.isInteger()) throw new Error("array index needs an integer");
 	if (n.lt(0) || n.gte(values.length)) throw new Error("array index out of range");
 	return values[n.toNumber()];
@@ -196,10 +202,8 @@ const hypot = (...args: unknown[]) => wrap(Decimal.hypot(...args.map(toDec)));
 parser.functions = nullMap({
 	d: (...args: unknown[]) => {
 		requireArity("d", args, 1);
-		if (typeof args[0] !== "string" || !/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i.test(args[0])) {
-			throw new Error("invalid decimal literal");
-		}
-		return wrap(new Decimal(args[0]));
+		if (typeof args[0] !== "string") throw new Error("invalid decimal literal");
+		return wrap(toDec(args[0]));
 	},
 	fac: (...args: unknown[]) => {
 		requireArity("fac", args, 1);
@@ -278,10 +282,13 @@ export function evaluateExpression(expression: string): { expression: string; va
 			.replace(/^\[DecimalError\]\s*/, "")
 			.replace(/^parse error \[\d+:\d+\]:\s*/, "")
 			.replace(/\bT[A-Z]+:\s*/g, "");
+		if (/precision limit exceeded/i.test(message)) message = "numeric argument exceeds precision limit";
 		if (error instanceof RangeError && /call stack/i.test(message)) message = "expression is too deeply nested";
 		throw new Error(`Invalid expression: ${message}`);
 	} finally {
 		factorialWorkLeft = 0;
+		resetDecimal();
+		GuardDecimal.set(GUARD_DECIMAL_CONFIG);
 	}
 
 	if (typeof result === "number") result = wrap(new Decimal(String(result)));
