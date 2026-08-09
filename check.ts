@@ -143,6 +143,7 @@ expectFailure("sin(1e101)", "sin() argument too large");
 expectFailure("sin(2^400)", "sin() argument too large");
 expectFailure(Array(372).fill("sin(9e972)").join("+"), "sin() argument too large");
 expectFailure(Array(101).fill("sin(1e100)").join("+"), "expression work budget exceeded");
+expectFailure(Array(101).fill("atan2(1, 1)").join("+"), "expression work budget exceeded");
 if (performance.now() - trigRejectionStarted > 1000) throw new Error("large trig rejection exceeded 1 second");
 if (evaluateExpression("sin(1)").value !== "0.8414709848078965066525023216302989996226") {
 	throw new Error("trig work budget leaked after a failed evaluation");

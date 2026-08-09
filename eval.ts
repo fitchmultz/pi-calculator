@@ -140,7 +140,7 @@ function trigonometric(
 ): (x: DecimalValue) => DecimalValue {
 	return (x) => {
 		if (maxAbs && x.abs().gt(maxAbs)) {
-			throw new Error(`${name}() argument too large (max absolute value 1e100)`);
+			throw new Error(`${name}() argument too large (max absolute value ${maxAbs.toString()})`);
 		}
 		spendExpensiveWork(TRIG_WORK);
 		return fn(x);
