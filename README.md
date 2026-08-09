@@ -1,6 +1,6 @@
 # pi-calculator
 
-A deterministic calculator tool for [Pi](https://github.com/earendil-works/pi) with 40-digit decimal precision.
+A deterministic calculator tool for [Pi](https://github.com/earendil-works/pi) with 40-digit decimal precision. Input literals are rounded to that precision before evaluation.
 
 Requires Pi 0.84.0 or later.
 

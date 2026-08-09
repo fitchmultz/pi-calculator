@@ -175,7 +175,18 @@ if (largePower.value.length > 50_000 || !largePower.value.includes("e+")) {
 }
 
 const largeLiteral = evaluateExpression("1".repeat(4000));
+if (largeLiteral.value !== `1.${"1".repeat(39)}e+3999`) throw new Error("large literal was not rounded to 40 digits");
 if (Buffer.byteLength(JSON.stringify(largeLiteral)) > 9000) throw new Error("evaluation details are unexpectedly large");
+
+const longNines = `0.${"9".repeat(4000)}`;
+const longInputStarted = performance.now();
+if (evaluateExpression(`tanh(${longNines})`).value !== evaluateExpression("tanh(1)").value) {
+	throw new Error("long tanh input was not rounded before evaluation");
+}
+if (evaluateExpression(`cbrt(${longNines})`).value !== "1") {
+	throw new Error("long cbrt input was not rounded before evaluation");
+}
+if (performance.now() - longInputStarted > 1000) throw new Error("long numeric inputs exceeded 1 second");
 
 if (!evaluateExpression("1000!").value) throw new Error("expected 1000! to remain supported");
 expectFailure("fac(1001)", "factorial operand too large");
