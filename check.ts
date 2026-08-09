@@ -105,6 +105,7 @@ for (const [expression, message] of [
 	['d("1**2")', "invalid decimal literal"],
 	['d("0x10")', "invalid decimal literal"],
 	["1e9999999999999999", "decimal literal overflow"],
+	[`9.${"9".repeat(41)}e9000000000000000`, "decimal literal overflow"],
 	["1e-9999999999999999", "decimal literal underflow"],
 	["1/* **/ +1", "comments are not supported"],
 	["1/**/+1", "comments are not supported"],
@@ -137,6 +138,16 @@ if (performance.now() - moduloRejectionStarted > 1000) {
 	throw new Error("large modulo rejection exceeded 1 second");
 }
 
+const trigRejectionStarted = performance.now();
+expectFailure("sin(1e101)", "sin() argument too large");
+expectFailure("sin(2^400)", "sin() argument too large");
+expectFailure(Array(372).fill("sin(9e972)").join("+"), "sin() argument too large");
+expectFailure(Array(101).fill("sin(1e100)").join("+"), "expression work budget exceeded");
+if (performance.now() - trigRejectionStarted > 1000) throw new Error("large trig rejection exceeded 1 second");
+if (evaluateExpression("sin(1)").value !== "0.8414709848078965066525023216302989996226") {
+	throw new Error("trig work budget leaked after a failed evaluation");
+}
+
 const hyperbolicRejectionStarted = performance.now();
 expectFailure("cosh(10001)", "cosh() argument too large");
 expectFailure("asinh(1e10000)", "asinh() argument too large");
@@ -145,7 +156,7 @@ if (performance.now() - hyperbolicRejectionStarted > 1000) {
 	throw new Error("large hyperbolic rejection exceeded 1 second");
 }
 
-expectFailure("tan(1e1000000)", "numeric argument exceeds precision limit");
+expectFailure("tan(1e1000000)", "tan() argument too large");
 if (CalculatorDecimal.precision !== DECIMAL_PRECISION || CalculatorDecimal.toExpPos !== 21) {
 	throw new Error("calculator Decimal configuration leaked after a failed evaluation");
 }

@@ -8,8 +8,10 @@ const MAX_ROUND_DIGITS = 1_000_000_000;
 const MAX_HYPERBOLIC_ABS = 10_000;
 const MAX_MODULO_EXPONENT_GAP = 10_000;
 const MAX_EXPENSIVE_WORK = 10_000;
+const TRIG_WORK = 100;
 const PI = new Decimal("3.141592653589793238462643383279502884197");
 const E = new Decimal("2.718281828459045235360287471352662497757");
+const MAX_TRIG_ABS = new Decimal("1e100");
 const GUARD_DECIMAL_CONFIG = {
 	defaults: true,
 	precision: DECIMAL_PRECISION + 10,
@@ -131,6 +133,20 @@ function spendExpensiveWork(cost: number): void {
 	expensiveWorkLeft -= cost;
 }
 
+function trigonometric(
+	name: string,
+	fn: (x: DecimalValue) => DecimalValue,
+	maxAbs?: DecimalValue,
+): (x: DecimalValue) => DecimalValue {
+	return (x) => {
+		if (maxAbs && x.abs().gt(maxAbs)) {
+			throw new Error(`${name}() argument too large (max absolute value 1e100)`);
+		}
+		spendExpensiveWork(TRIG_WORK);
+		return fn(x);
+	};
+}
+
 function hyperbolic(name: string, fn: (x: DecimalValue) => DecimalValue): (x: DecimalValue) => DecimalValue {
 	return (x) => {
 		if (x.abs().gt(MAX_HYPERBOLIC_ABS)) {
@@ -179,12 +195,12 @@ function arrayIndex(values: unknown, index: unknown): unknown {
 }
 
 const decimalUnary: Record<string, (x: DecimalValue) => DecimalValue> = {
-	sin: (x) => Decimal.sin(x),
-	cos: (x) => Decimal.cos(x),
-	tan: (x) => Decimal.tan(x),
-	asin: (x) => Decimal.asin(x),
-	acos: (x) => Decimal.acos(x),
-	atan: (x) => Decimal.atan(x),
+	sin: trigonometric("sin", (x) => Decimal.sin(x), MAX_TRIG_ABS),
+	cos: trigonometric("cos", (x) => Decimal.cos(x), MAX_TRIG_ABS),
+	tan: trigonometric("tan", (x) => Decimal.tan(x), MAX_TRIG_ABS),
+	asin: trigonometric("asin", (x) => Decimal.asin(x)),
+	acos: trigonometric("acos", (x) => Decimal.acos(x)),
+	atan: trigonometric("atan", (x) => Decimal.atan(x)),
 	sinh: hyperbolic("sinh", (x) => Decimal.sinh(x)),
 	cosh: hyperbolic("cosh", (x) => Decimal.cosh(x)),
 	tanh: hyperbolic("tanh", (x) => Decimal.tanh(x)),
@@ -245,7 +261,9 @@ parser.functions = nullMap({
 	},
 	atan2: (...args: unknown[]) => {
 		requireArity("atan2", args, 2);
-		return wrap(Decimal.atan2(toDec(args[0]), toDec(args[1])));
+		const values = args.map(toDec);
+		spendExpensiveWork(TRIG_WORK);
+		return wrap(Decimal.atan2(values[0]!, values[1]!));
 	},
 	min: (...args: unknown[]) => wrap(Decimal.min(...decimalArguments(args, "min"))),
 	max: (...args: unknown[]) => wrap(Decimal.max(...decimalArguments(args, "max"))),

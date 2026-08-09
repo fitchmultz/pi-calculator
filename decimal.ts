@@ -35,7 +35,10 @@ function decimalFromString(value: string): DecimalValue {
 	if (decimal.isZero() && /[1-9]/.test(value.replace(/[eE].*$/, ""))) {
 		throw new Error("decimal literal underflow");
 	}
-	return decimal.toSignificantDigits(DECIMAL_PRECISION);
+	const rounded = decimal.toSignificantDigits(DECIMAL_PRECISION);
+	if (!rounded.isFinite()) throw new Error("decimal literal overflow");
+	if (rounded.isZero() && !decimal.isZero()) throw new Error("decimal literal underflow");
+	return rounded;
 }
 
 export function toDec(value: unknown): DecimalValue {
