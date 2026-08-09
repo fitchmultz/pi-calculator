@@ -21,7 +21,7 @@ mean([2,4,6,8])
 
 Supported named functions include `sin`, `cos`, `tan` and their inverse/hyperbolic variants; `sqrt`, `cbrt`, `abs`, `exp`, `expm1`, `ln`/`log`, `log1p`, `log2`, `log10`/`lg`; `ceil`, `floor`, `round`, `roundTo`, `trunc`, `sign`; `pow`, `atan2`, `min`, `max`, `sum`, `hypot`/`pyt`, `percent`; and `mean`, `median`, `stdev`, `stdevs`. `deg(x)` converts degrees to radians and `rad(x)` converts radians to degrees.
 
-Factorials use `n!` or `fac(n)` for integers from 0 through 1000. Each expression has a shared 1000-step factorial budget. Hyperbolic functions reject inputs with an absolute value above 10,000 to keep evaluation bounded.
+Factorials use `n!` or `fac(n)` for integers from 0 through 1000. Each expression has a shared 1000-step factorial budget. To keep evaluation bounded, hyperbolic functions reject absolute inputs above 10,000, `%` rejects operand exponent gaps above 10,000, and those operations share a 10,000-unit work budget.
 
 ## Verification
 

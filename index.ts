@@ -12,7 +12,7 @@ const calculatorTool = defineTool({
 		"Use calculator for non-trivial math instead of computing in prose.",
 		`Calculator uses decimal.js with ${DECIMAL_PRECISION}-digit precision; use ^ or ** for powers, PI and E for constants, and log()/ln(), log2(), or log10() for logarithms.`,
 		"Calculator trig uses radians; deg(90) converts degrees to radians, while rad(PI) converts radians to degrees.",
-		"Calculator supports percent(value, of), n!/fac(n) through 1000 with a shared 1000-step budget, and mean/median/stdev/stdevs arrays.",
+		"Calculator supports percent(value, of), n!/fac(n) through 1000, and mean/median/stdev/stdevs arrays; expensive operations use per-expression work budgets.",
 	],
 	parameters: Type.Object(
 		{

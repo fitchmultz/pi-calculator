@@ -11,6 +11,7 @@ const cases: Array<[string, string]> = [
 	["2^3^2", "512"],
 	["-2^2", "-4"],
 	["2^-2", "0.25"],
+	["1e10000 % 3", "1"],
 	["(12.5 * 1.0825) ^ 3", "2477.500518798828125"],
 	["(12.5 * 1.0825) ** 3", "2477.500518798828125"],
 	["sqrt(144)", "12"],
@@ -50,7 +51,9 @@ const cases: Array<[string, string]> = [
 	["rad(PI)", "180"],
 	["median([999999999999999, 1000000000000000, 1000000000000001])", "1000000000000000"],
 	["hypot(3, 4)", "5"],
+	["hypot([3, 4])", "5"],
 	["pyt(3, 4, 12)", "13"],
+	["tanh(5000) + tanh(5000)", "2"],
 ];
 
 for (const [expression, expected] of cases) {
@@ -126,9 +129,18 @@ expectFailure(
 	"expression is too deeply nested",
 );
 
+const moduloRejectionStarted = performance.now();
+expectFailure("1e10001 % 3", "modulo exponent gap too large");
+expectFailure("1 % 1e-10001", "modulo exponent gap too large");
+expectFailure("1e6000 % 3 + 1e5000 % 3", "expression work budget exceeded");
+if (performance.now() - moduloRejectionStarted > 1000) {
+	throw new Error("large modulo rejection exceeded 1 second");
+}
+
 const hyperbolicRejectionStarted = performance.now();
 expectFailure("cosh(10001)", "cosh() argument too large");
 expectFailure("asinh(1e10000)", "asinh() argument too large");
+expectFailure("tanh(6000) + tanh(5000)", "expression work budget exceeded");
 if (performance.now() - hyperbolicRejectionStarted > 1000) {
 	throw new Error("large hyperbolic rejection exceeded 1 second");
 }

@@ -11,7 +11,7 @@
 - Accept negative zero factorials, correctly round factorials once from an exact BigInt result, and reject extra function arguments.
 - Restore the full 40-digit `E` constant, reset Decimal state after every evaluation, cap nesting deterministically, and replace raw dependency errors with stable calculator errors.
 - Disable member access and unadvertised conditional, comparison, logical, higher-order, random, string-escape, comment, and multi-expression operations.
-- Bound hyperbolic operands to prevent unbounded synchronous evaluation.
+- Bound hyperbolic operands and modulo exponent gaps with a shared work budget to prevent synchronous CPU amplification.
 
 ### Changed
 

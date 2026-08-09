@@ -6,6 +6,8 @@ const MAX_FACTORIAL_OPERAND = 1000;
 const MAX_FACTORIAL_WORK = MAX_FACTORIAL_OPERAND;
 const MAX_ROUND_DIGITS = 1_000_000_000;
 const MAX_HYPERBOLIC_ABS = 10_000;
+const MAX_MODULO_EXPONENT_GAP = 10_000;
+const MAX_EXPENSIVE_WORK = 10_000;
 const PI = new Decimal("3.141592653589793238462643383279502884197");
 const E = new Decimal("2.718281828459045235360287471352662497757");
 const GUARD_DECIMAL_CONFIG = {
@@ -16,6 +18,7 @@ const GUARD_DECIMAL_CONFIG = {
 const GuardDecimal = Decimal.clone(GUARD_DECIMAL_CONFIG);
 
 let factorialWorkLeft = 0;
+let expensiveWorkLeft = 0;
 const EMPTY_VARIABLES: Record<string, never> = Object.create(null);
 
 const parser = new Parser({
@@ -123,13 +126,30 @@ function log1p(value: DecimalValue): DecimalValue {
 	return new Decimal(total.toSignificantDigits(DECIMAL_PRECISION).toString());
 }
 
+function spendExpensiveWork(cost: number): void {
+	if (cost > expensiveWorkLeft) throw new Error("expression work budget exceeded");
+	expensiveWorkLeft -= cost;
+}
+
 function hyperbolic(name: string, fn: (x: DecimalValue) => DecimalValue): (x: DecimalValue) => DecimalValue {
 	return (x) => {
 		if (x.abs().gt(MAX_HYPERBOLIC_ABS)) {
 			throw new Error(`${name}() argument too large (max absolute value ${MAX_HYPERBOLIC_ABS})`);
 		}
+		spendExpensiveWork(x.isFinite() ? Math.max(1, Math.ceil(x.abs().toNumber())) : 1);
 		return fn(x);
 	};
+}
+
+function modulo(a: unknown, b: unknown) {
+	const left = toDec(a);
+	const right = toDec(b);
+	const exponentGap = left.isFinite() && right.isFinite() ? Math.abs(left.e - right.e) : 0;
+	if (exponentGap > MAX_MODULO_EXPONENT_GAP) {
+		throw new Error(`modulo exponent gap too large (max ${MAX_MODULO_EXPONENT_GAP})`);
+	}
+	spendExpensiveWork(Math.max(1, exponentGap));
+	return wrap(left.mod(right));
 }
 
 function roundTo(...args: unknown[]) {
@@ -201,16 +221,13 @@ parser.binaryOps = nullMap({
 	"-": (a, b) => wrap(toDec(a).minus(toDec(b))),
 	"*": (a, b) => wrap(toDec(a).times(toDec(b))),
 	"/": (a, b) => wrap(toDec(a).div(toDec(b))),
-	"%": (a, b) => wrap(toDec(a).mod(toDec(b))),
+	"%": modulo,
 	"^": (a, b) => wrap(toDec(a).pow(toDec(b))),
 	"[": arrayIndex,
 });
 parser.ternaryOps = nullMap({});
 
-const hypot = (...args: unknown[]) => {
-	if (args.length === 0) throw new Error("hypot() needs at least one number");
-	return wrap(Decimal.hypot(...args.map(toDec)));
-};
+const hypot = (...args: unknown[]) => wrap(Decimal.hypot(...decimalArguments(args, "hypot")));
 
 parser.functions = nullMap({
 	d: (...args: unknown[]) => {
@@ -287,6 +304,7 @@ export function evaluateExpression(expression: string): { expression: string; va
 	const normalized = normalizeExpression(expression);
 	let result: unknown;
 	factorialWorkLeft = MAX_FACTORIAL_WORK;
+	expensiveWorkLeft = MAX_EXPENSIVE_WORK;
 	try {
 		result = parser.evaluate(decimalizeExpression(normalized), EMPTY_VARIABLES);
 	} catch (error) {
@@ -300,6 +318,7 @@ export function evaluateExpression(expression: string): { expression: string; va
 		throw new Error(`Invalid expression: ${message}`);
 	} finally {
 		factorialWorkLeft = 0;
+		expensiveWorkLeft = 0;
 		resetDecimal();
 		GuardDecimal.set(GUARD_DECIMAL_CONFIG);
 	}
