@@ -19,12 +19,16 @@ try {
 	const calculator = tools[0]!.definition;
 	const input = { expression: "0.1 + 0.2" };
 	if (!Value.Check(calculator.parameters, input)) throw new Error("calculator schema rejected valid input");
+	if (Value.Check(calculator.parameters, { expression: "1", extra: true })) throw new Error("calculator schema accepted an extra property");
 	if (Value.Check(calculator.parameters, { expression: "1".repeat(4097) })) throw new Error("calculator schema accepted oversized input");
 
 	const result = await calculator.execute("check", input, undefined, undefined, undefined as never);
 	const text = result.content[0];
 	if (text?.type !== "text" || text.text !== "0.1 + 0.2 = 0.3") {
 		throw new Error(`unexpected calculator result: ${JSON.stringify(result)}`);
+	}
+	if (JSON.stringify(result.details) !== '{"expression":"0.1 + 0.2","value":"0.3"}') {
+		throw new Error(`unexpected calculator details: ${JSON.stringify(result.details)}`);
 	}
 
 	const multilineInput = { expression: `1${"\n".repeat(4092)}+1` };
