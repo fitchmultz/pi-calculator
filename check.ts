@@ -17,6 +17,7 @@ const cases: Array<[string, string]> = [
 	["sin(PI/2)", "1"],
 	["sin(deg(90))", "1"],
 	["sinh(0) + cosh(0) + tanh(0)", "1"],
+	["tanh(10000)", "1"],
 	["asinh(0) + acosh(1) + atanh(0)", "0"],
 	["expm1(0) + log1p(0)", "0"],
 	["expm1(1e-20)", "1.000000000000000000005e-20"],
@@ -84,6 +85,7 @@ for (const [expression, message] of [
 	["toString()", "undefined variable: toString"],
 	["hasOwnProperty(1)", "undefined variable: hasOwnProperty"],
 	["PI.d", "member access is not permitted"],
+	["hypot()", "hypot() needs at least one number"],
 	["2 + * 3", "unexpected *"],
 	["mean([1,2,)", "unexpected )"],
 	["sqrt(", "unexpected EOF"],
@@ -96,13 +98,15 @@ for (const [expression, message] of [
 	['[1,2]["constructor"]', "array index needs an integer"],
 	['[1,2]["0x1"]', "array index needs an integer"],
 	["[1,2][2]", "array index out of range"],
-	['d("1\\"2")', "invalid decimal literal"],
+	['d("1\\"2")', "escape sequences are not supported"],
 	['d("1**2")', "invalid decimal literal"],
 	['d("0x10")', "invalid decimal literal"],
 	["1e9999999999999999", "decimal literal overflow"],
 	["1e-9999999999999999", "decimal literal underflow"],
 	["1/* **/ +1", "comments are not supported"],
 	["1/**/+1", "comments are not supported"],
+	['mean(["1\\\\","2"])', "escape sequences are not supported"],
+	["1;2", "multiple expressions are not supported"],
 	["a".repeat(5000), "Expression too long"],
 ] as const) {
 	expectFailure(expression, message);
@@ -121,6 +125,13 @@ expectFailure(
 	`${"(".repeat(MAX_EXPRESSION_DEPTH + 1)}1${")".repeat(MAX_EXPRESSION_DEPTH + 1)}`,
 	"expression is too deeply nested",
 );
+
+const hyperbolicRejectionStarted = performance.now();
+expectFailure("cosh(10001)", "cosh() argument too large");
+expectFailure("asinh(1e10000)", "asinh() argument too large");
+if (performance.now() - hyperbolicRejectionStarted > 1000) {
+	throw new Error("large hyperbolic rejection exceeded 1 second");
+}
 
 expectFailure("tan(1e1000000)", "numeric argument exceeds precision limit");
 if (CalculatorDecimal.precision !== DECIMAL_PRECISION || CalculatorDecimal.toExpPos !== 21) {

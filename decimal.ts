@@ -51,6 +51,8 @@ export function toDec(value: unknown): DecimalValue {
 
 /** Preserve numeric literal precision and normalize ** outside quoted strings. */
 export function decimalizeExpression(expression: string): string {
+	if (expression.includes("\\")) throw new Error("escape sequences are not supported");
+
 	let result = "";
 	let i = 0;
 	let nestingDepth = 0;
@@ -59,8 +61,7 @@ export function decimalizeExpression(expression: string): string {
 		const ch = expression[i]!;
 
 		if (ch === '"' || ch === "'") {
-			let end = expression.indexOf(ch, i + 1);
-			while (end >= 0 && expression[end - 1] === "\\") end = expression.indexOf(ch, end + 1);
+			const end = expression.indexOf(ch, i + 1);
 			if (end < 0) throw new Error("unclosed string in expression");
 			result += expression.slice(i, end + 1);
 			i = end + 1;
@@ -68,6 +69,7 @@ export function decimalizeExpression(expression: string): string {
 		}
 
 		if (ch === "/" && expression[i + 1] === "*") throw new Error("comments are not supported");
+		if (ch === ";") throw new Error("multiple expressions are not supported");
 
 		if (ch === "(" || ch === "[") {
 			nestingDepth++;

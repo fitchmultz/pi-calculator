@@ -5,6 +5,7 @@ export const MAX_EXPRESSION_LENGTH = 4096;
 const MAX_FACTORIAL_OPERAND = 1000;
 const MAX_FACTORIAL_WORK = MAX_FACTORIAL_OPERAND;
 const MAX_ROUND_DIGITS = 1_000_000_000;
+const MAX_HYPERBOLIC_ABS = 10_000;
 const PI = new Decimal("3.141592653589793238462643383279502884197");
 const E = new Decimal("2.718281828459045235360287471352662497757");
 const GUARD_DECIMAL_CONFIG = {
@@ -122,6 +123,15 @@ function log1p(value: DecimalValue): DecimalValue {
 	return new Decimal(total.toSignificantDigits(DECIMAL_PRECISION).toString());
 }
 
+function hyperbolic(name: string, fn: (x: DecimalValue) => DecimalValue): (x: DecimalValue) => DecimalValue {
+	return (x) => {
+		if (x.abs().gt(MAX_HYPERBOLIC_ABS)) {
+			throw new Error(`${name}() argument too large (max absolute value ${MAX_HYPERBOLIC_ABS})`);
+		}
+		return fn(x);
+	};
+}
+
 function roundTo(...args: unknown[]) {
 	requireArity("roundTo", args, 2);
 	const digits = toDec(args[1]);
@@ -155,12 +165,12 @@ const decimalUnary: Record<string, (x: DecimalValue) => DecimalValue> = {
 	asin: (x) => Decimal.asin(x),
 	acos: (x) => Decimal.acos(x),
 	atan: (x) => Decimal.atan(x),
-	sinh: (x) => Decimal.sinh(x),
-	cosh: (x) => Decimal.cosh(x),
-	tanh: (x) => Decimal.tanh(x),
-	asinh: (x) => Decimal.asinh(x),
-	acosh: (x) => Decimal.acosh(x),
-	atanh: (x) => Decimal.atanh(x),
+	sinh: hyperbolic("sinh", (x) => Decimal.sinh(x)),
+	cosh: hyperbolic("cosh", (x) => Decimal.cosh(x)),
+	tanh: hyperbolic("tanh", (x) => Decimal.tanh(x)),
+	asinh: hyperbolic("asinh", (x) => Decimal.asinh(x)),
+	acosh: hyperbolic("acosh", (x) => Decimal.acosh(x)),
+	atanh: hyperbolic("atanh", (x) => Decimal.atanh(x)),
 	sqrt: (x) => Decimal.sqrt(x),
 	cbrt: (x) => Decimal.cbrt(x),
 	abs: (x) => Decimal.abs(x),
@@ -197,7 +207,10 @@ parser.binaryOps = nullMap({
 });
 parser.ternaryOps = nullMap({});
 
-const hypot = (...args: unknown[]) => wrap(Decimal.hypot(...args.map(toDec)));
+const hypot = (...args: unknown[]) => {
+	if (args.length === 0) throw new Error("hypot() needs at least one number");
+	return wrap(Decimal.hypot(...args.map(toDec)));
+};
 
 parser.functions = nullMap({
 	d: (...args: unknown[]) => {
