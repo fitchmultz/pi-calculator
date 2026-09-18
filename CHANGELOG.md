@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.0.2 - 2026-09-18
+
+### Fixed
+
+- Preserve tangent accuracy near poles by dividing guarded sine and cosine values.
+- Preserve cancellation remainders in sums without allocating across large exponent gaps, and round means and even medians only after division.
+- Center standard-deviation calculations before averaging so identical measurements have zero spread and large common offsets do not distort the result.
+- Reject non-finite measurements in statistics, including medians that previously hid invalid square roots or division by zero.
+
+### Added
+
+- Regression checks for numeric correctness and GitHub CI verification on the minimum supported Node version and Node 24.
+
 ## 2.0.1 - 2026-08-08
 
 ### Fixed
