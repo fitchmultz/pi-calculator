@@ -68,7 +68,9 @@ function decimals(values: unknown, name: string, minLength = 1): DecimalValue[] 
 	}
 	return values.map((value, index) => {
 		try {
-			return toDec(value);
+			const number = toDec(value);
+			if (!number.isFinite()) throw new Error("expected a finite number");
+			return number;
 		} catch {
 			throw new Error(`${name}(): invalid number at index ${index}`);
 		}
@@ -87,13 +89,75 @@ function decimalArguments(args: unknown[], name: string): DecimalValue[] {
 	});
 }
 
-function sum(xs: DecimalValue[]): DecimalValue {
-	return xs.reduce((total, value) => total.plus(value), new Decimal(0));
+function sum(xs: DecimalValue[], Ctor = Decimal, divisor = 1): DecimalValue {
+	if (xs.some((x) => !x.isFinite())) return Ctor.sum(...xs).div(divisor);
+
+	// Decimal.sum also truncates across large exponent gaps. Signed BigInt chunks
+	// keep the exact sum sparse, including intermediate values outside Decimal's range.
+	const width = BigInt(Ctor.precision);
+	const base = 10n ** width;
+	const bins = new Map<bigint, bigint>();
+	const add = (key: bigint, value: bigint) => bins.set(key, (bins.get(key) ?? 0n) + value);
+	for (const x of xs) {
+		if (x.isZero()) continue;
+		const digits = x.toExponential().split("e")[0]!.replace(".", "");
+		const exponent = BigInt(x.e) - BigInt(x.sd() - 1);
+		const key = exponent >= 0n ? exponent / width : (exponent - width + 1n) / width;
+		add(key, BigInt(digits) * 10n ** (exponent - key * width));
+	}
+	for (let key of [...bins.keys()].sort((a, b) => Number(a - b))) {
+		for (;;) {
+			const value = bins.get(key)!;
+			const carry = value / base;
+			bins.set(key, value % base);
+			if (!carry) break;
+			add(++key, carry);
+		}
+	}
+
+	const keys = [...bins.keys()].filter((key) => bins.get(key) !== 0n).sort((a, b) => Number(b - a));
+	if (keys.length === 0) return new Ctor(0);
+	let key = keys[0]!;
+	let coefficient = bins.get(key)!;
+	let i = 1;
+	const digitCount = (n: bigint) => n.toString().replace("-", "").length;
+	const retained = Ctor.precision + Math.ceil(Math.log10(divisor)) + 2;
+	for (; i < keys.length; i++) {
+		const next = keys[i]!;
+		if (digitCount(coefficient) >= retained || key - next > 2n) break;
+		coefficient = coefficient * base ** (key - next) + bins.get(next)!;
+		key = next;
+	}
+
+	// Normalized chunks have magnitude < base, so the leading remaining chunk
+	// determines the tail's sign. A sticky digit preserves which side of a tie it lies on.
+	let shift = 0n;
+	if (i < keys.length) {
+		shift = BigInt(Math.max(2, retained - digitCount(coefficient)));
+		coefficient = coefficient * 10n ** shift + (bins.get(keys[i]!)! > 0n ? 1n : -1n);
+	}
+	// Divide and round before restoring the exponent to avoid intermediate overflow/underflow.
+	const [mantissa, exponent] = new Ctor(coefficient.toString()).div(divisor).toExponential().split("e");
+	return new Ctor(`${mantissa}e${BigInt(exponent!) + key * width - shift}`);
 }
 
-function variance(xs: DecimalValue[], sample: boolean): DecimalValue {
-	const mean = sum(xs).div(xs.length);
-	return sum(xs.map((x) => x.minus(mean).pow(2))).div(sample ? xs.length - 1 : xs.length);
+function mean(xs: DecimalValue[]): DecimalValue {
+	return sum(xs, Decimal, xs.length);
+}
+
+function standardDeviation(xs: DecimalValue[], sample: boolean): DecimalValue {
+	// Center on an input first so a large common offset cannot round away the spread.
+	const shifted = xs.map((x) => new GuardDecimal(x).minus(xs[0]!));
+	const center = sum(shifted, GuardDecimal, xs.length);
+	const squared = shifted.map((x) => x.minus(center).pow(2));
+	return new Decimal(sum(squared, GuardDecimal, sample ? xs.length - 1 : xs.length)
+		.sqrt().toSignificantDigits(DECIMAL_PRECISION));
+}
+
+function tangent(value: DecimalValue): DecimalValue {
+	// Avoid Decimal.tan's cancellation in sqrt(1 - sin(x)^2) near a pole.
+	const x = new GuardDecimal(value);
+	return new Decimal(x.sin().div(x.cos()).toSignificantDigits(DECIMAL_PRECISION));
 }
 
 function expm1(value: DecimalValue): DecimalValue {
@@ -197,7 +261,7 @@ function arrayIndex(values: unknown, index: unknown): unknown {
 const decimalUnary: Record<string, (x: DecimalValue) => DecimalValue> = {
 	sin: trigonometric("sin", (x) => Decimal.sin(x), MAX_TRIG_ABS),
 	cos: trigonometric("cos", (x) => Decimal.cos(x), MAX_TRIG_ABS),
-	tan: trigonometric("tan", (x) => Decimal.tan(x), MAX_TRIG_ABS),
+	tan: trigonometric("tan", tangent, MAX_TRIG_ABS),
 	asin: trigonometric("asin", (x) => Decimal.asin(x)),
 	acos: trigonometric("acos", (x) => Decimal.acos(x)),
 	atan: trigonometric("atan", (x) => Decimal.atan(x)),
@@ -288,22 +352,21 @@ parser.functions = nullMap({
 	},
 	mean: (...args: unknown[]) => {
 		requireArity("mean", args, 1);
-		const xs = decimals(args[0], "mean");
-		return wrap(sum(xs).div(xs.length));
+		return wrap(mean(decimals(args[0], "mean")));
 	},
 	median: (...args: unknown[]) => {
 		requireArity("median", args, 1);
 		const xs = decimals(args[0], "median").sort((a, b) => a.comparedTo(b));
 		const mid = Math.floor(xs.length / 2);
-		return wrap(xs.length % 2 === 0 ? xs[mid - 1]!.plus(xs[mid]!).div(2) : xs[mid]!);
+		return wrap(xs.length % 2 === 0 ? mean([xs[mid - 1]!, xs[mid]!]) : xs[mid]!);
 	},
 	stdev: (...args: unknown[]) => {
 		requireArity("stdev", args, 1);
-		return wrap(variance(decimals(args[0], "stdev"), false).sqrt());
+		return wrap(standardDeviation(decimals(args[0], "stdev"), false));
 	},
 	stdevs: (...args: unknown[]) => {
 		requireArity("stdevs", args, 1);
-		return wrap(variance(decimals(args[0], "stdevs", 2), true).sqrt());
+		return wrap(standardDeviation(decimals(args[0], "stdevs", 2), true));
 	},
 });
 
