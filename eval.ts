@@ -1,5 +1,5 @@
 import { Parser } from "expr-eval-fork";
-import { DECIMAL_PRECISION, Decimal, decimalizeExpression, isDecVal, resetDecimal, toDec, wrap, type DecimalValue } from "./decimal.ts";
+import { DECIMAL_PRECISION, Decimal, decimalizeExpression, resetDecimal, toDec, type DecimalValue } from "./decimal.ts";
 
 export const MAX_EXPRESSION_LENGTH = 4096;
 const MAX_FACTORIAL_OPERAND = 1000;
@@ -58,7 +58,7 @@ function factorial(value: unknown) {
 
 	let result = 1n;
 	for (let i = 2; i <= count; i++) result *= BigInt(i);
-	return wrap(new Decimal(result.toString()).toSignificantDigits(DECIMAL_PRECISION));
+	return new Decimal(result.toString()).toSignificantDigits(DECIMAL_PRECISION);
 }
 
 function decimals(values: unknown, name: string, minLength = 1): DecimalValue[] {
@@ -80,13 +80,7 @@ function decimals(values: unknown, name: string, minLength = 1): DecimalValue[] 
 function decimalArguments(args: unknown[], name: string): DecimalValue[] {
 	const values = args.length === 1 && Array.isArray(args[0]) ? args[0] : args;
 	if (values.length === 0) throw new Error(`${name}() needs at least one number`);
-	return values.map((value, index) => {
-		try {
-			return toDec(value);
-		} catch {
-			throw new Error(`${name}(): invalid number at index ${index}`);
-		}
-	});
+	return decimals(values, name);
 }
 
 function sum(xs: DecimalValue[], Ctor = Decimal, divisor = 1): DecimalValue {
@@ -229,7 +223,7 @@ function modulo(a: unknown, b: unknown) {
 		throw new Error(`modulo exponent gap too large (max ${MAX_MODULO_EXPONENT_GAP})`);
 	}
 	spendExpensiveWork(Math.max(1, exponentGap));
-	return wrap(left.mod(right));
+	return left.mod(right);
 }
 
 function roundTo(...args: unknown[]) {
@@ -240,9 +234,9 @@ function roundTo(...args: unknown[]) {
 	}
 	const places = digits.toNumber();
 	const value = toDec(args[0]);
-	if (places >= 0) return wrap(value.toDecimalPlaces(places));
+	if (places >= 0) return value.toDecimalPlaces(places);
 	const scale = new Decimal(10).pow(-places);
-	return wrap(value.div(scale).toDecimalPlaces(0).times(scale));
+	return value.div(scale).toDecimalPlaces(0).times(scale);
 }
 
 function arrayIndex(values: unknown, index: unknown): unknown {
@@ -290,30 +284,30 @@ const decimalUnary: Record<string, (x: DecimalValue) => DecimalValue> = {
 };
 
 parser.unaryOps = nullMap({
-	...Object.fromEntries(Object.entries(decimalUnary).map(([name, fn]) => [name, (value: unknown) => wrap(fn(toDec(value)))])),
-	"+": (value: unknown) => wrap(toDec(value)),
-	"-": (value: unknown) => wrap(toDec(value).negated()),
+	...Object.fromEntries(Object.entries(decimalUnary).map(([name, fn]) => [name, (value: unknown) => fn(toDec(value))])),
+	"+": toDec,
+	"-": (value: unknown) => toDec(value).negated(),
 	"!": factorial,
 });
 
 parser.binaryOps = nullMap({
-	"+": (a, b) => wrap(toDec(a).plus(toDec(b))),
-	"-": (a, b) => wrap(toDec(a).minus(toDec(b))),
-	"*": (a, b) => wrap(toDec(a).times(toDec(b))),
-	"/": (a, b) => wrap(toDec(a).div(toDec(b))),
+	"+": (a, b) => toDec(a).plus(toDec(b)),
+	"-": (a, b) => toDec(a).minus(toDec(b)),
+	"*": (a, b) => toDec(a).times(toDec(b)),
+	"/": (a, b) => toDec(a).div(toDec(b)),
 	"%": modulo,
-	"^": (a, b) => wrap(toDec(a).pow(toDec(b))),
+	"^": (a, b) => toDec(a).pow(toDec(b)),
 	"[": arrayIndex,
 });
 parser.ternaryOps = nullMap({});
 
-const hypot = (...args: unknown[]) => wrap(Decimal.hypot(...decimalArguments(args, "hypot")));
+const hypot = (...args: unknown[]) => Decimal.hypot(...decimalArguments(args, "hypot"));
 
 parser.functions = nullMap({
 	d: (...args: unknown[]) => {
 		requireArity("d", args, 1);
 		if (typeof args[0] !== "string") throw new Error("invalid decimal literal");
-		return wrap(toDec(args[0]));
+		return toDec(args[0]);
 	},
 	fac: (...args: unknown[]) => {
 		requireArity("fac", args, 1);
@@ -321,56 +315,56 @@ parser.functions = nullMap({
 	},
 	pow: (...args: unknown[]) => {
 		requireArity("pow", args, 2);
-		return wrap(toDec(args[0]).pow(toDec(args[1])));
+		return toDec(args[0]).pow(toDec(args[1]));
 	},
 	atan2: (...args: unknown[]) => {
 		requireArity("atan2", args, 2);
 		const values = args.map(toDec);
 		spendExpensiveWork(TRIG_WORK);
-		return wrap(Decimal.atan2(values[0]!, values[1]!));
+		return Decimal.atan2(values[0]!, values[1]!);
 	},
-	min: (...args: unknown[]) => wrap(Decimal.min(...decimalArguments(args, "min"))),
-	max: (...args: unknown[]) => wrap(Decimal.max(...decimalArguments(args, "max"))),
+	min: (...args: unknown[]) => Decimal.min(...decimalArguments(args, "min")),
+	max: (...args: unknown[]) => Decimal.max(...decimalArguments(args, "max")),
 	sum: (...args: unknown[]) => {
 		requireArity("sum", args, 1);
-		return wrap(sum(decimals(args[0], "sum")));
+		return sum(decimals(args[0], "sum"));
 	},
 	hypot,
 	pyt: hypot,
 	roundTo,
 	percent: (...args: unknown[]) => {
 		requireArity("percent", args, 2);
-		return wrap(toDec(args[1]).times(toDec(args[0])).div(100));
+		return toDec(args[1]).times(toDec(args[0])).div(100);
 	},
-	deg: (...args: unknown[]) => {
-		requireArity("deg", args, 1);
-		return wrap(toDec(args[0]).times(PI).div(180));
+	radians: (...args: unknown[]) => {
+		requireArity("radians", args, 1);
+		return toDec(args[0]).times(PI).div(180);
 	},
-	rad: (...args: unknown[]) => {
-		requireArity("rad", args, 1);
-		return wrap(toDec(args[0]).times(180).div(PI));
+	degrees: (...args: unknown[]) => {
+		requireArity("degrees", args, 1);
+		return toDec(args[0]).times(180).div(PI);
 	},
 	mean: (...args: unknown[]) => {
 		requireArity("mean", args, 1);
-		return wrap(mean(decimals(args[0], "mean")));
+		return mean(decimals(args[0], "mean"));
 	},
 	median: (...args: unknown[]) => {
 		requireArity("median", args, 1);
 		const xs = decimals(args[0], "median").sort((a, b) => a.comparedTo(b));
 		const mid = Math.floor(xs.length / 2);
-		return wrap(xs.length % 2 === 0 ? mean([xs[mid - 1]!, xs[mid]!]) : xs[mid]!);
+		return xs.length % 2 === 0 ? mean([xs[mid - 1]!, xs[mid]!]) : xs[mid]!;
 	},
 	stdev: (...args: unknown[]) => {
 		requireArity("stdev", args, 1);
-		return wrap(standardDeviation(decimals(args[0], "stdev"), false));
+		return standardDeviation(decimals(args[0], "stdev"), false);
 	},
 	stdevs: (...args: unknown[]) => {
 		requireArity("stdevs", args, 1);
-		return wrap(standardDeviation(decimals(args[0], "stdevs", 2), true));
+		return standardDeviation(decimals(args[0], "stdevs", 2), true);
 	},
 });
 
-parser.consts = nullMap({ PI: wrap(PI), E: wrap(E) });
+parser.consts = nullMap({ PI, E });
 
 function normalizeExpression(expression: string): string {
 	const trimmed = expression.trim();
@@ -381,7 +375,20 @@ function normalizeExpression(expression: string): string {
 	return trimmed;
 }
 
-export function evaluateExpression(expression: string): { expression: string; value: string } {
+function resultString(result: unknown): string {
+	if (typeof result === "number") result = new Decimal(String(result));
+	if (!(result instanceof Decimal)) {
+		const type = Array.isArray(result) ? "array" : typeof result;
+		throw new Error(`Expression did not evaluate to a number (got ${type})`);
+	}
+	if (!result.isFinite()) {
+		if (result.isNaN()) throw new Error("Result is NaN");
+		throw new Error(result.isPositive() ? "Result is Infinity" : "Result is -Infinity");
+	}
+	return result.toString();
+}
+
+export function evaluateExpression(expression: string): { expression: string; value: string | string[] } {
 	const normalized = normalizeExpression(expression);
 	let result: unknown;
 	factorialWorkLeft = MAX_FACTORIAL_WORK;
@@ -404,15 +411,10 @@ export function evaluateExpression(expression: string): { expression: string; va
 		GuardDecimal.set(GUARD_DECIMAL_CONFIG);
 	}
 
-	if (typeof result === "number") result = wrap(new Decimal(String(result)));
-	if (!isDecVal(result)) {
-		const type = Array.isArray(result) ? "array" : typeof result;
-		throw new Error(`Expression did not evaluate to a number (got ${type})`);
+	const value = Array.isArray(result) ? result.map(resultString) : resultString(result);
+	const evaluated = { expression: normalized, value };
+	if (Buffer.byteLength(JSON.stringify(evaluated)) > 50 * 1024) {
+		throw new Error("Result exceeds 50 KiB output limit");
 	}
-	if (!result.d.isFinite()) {
-		if (result.d.isNaN()) throw new Error("Result is NaN");
-		throw new Error(result.d.isPositive() ? "Result is Infinity" : "Result is -Infinity");
-	}
-
-	return { expression: normalized, value: result.d.toString() };
+	return evaluated;
 }

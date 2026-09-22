@@ -16,18 +16,6 @@ export function resetDecimal(): void {
 
 const DECIMAL_LITERAL = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i;
 
-export type DecVal = { readonly __piDec: true; readonly d: DecimalValue };
-
-export function wrap(d: DecimalValue): DecVal {
-	return { __piDec: true, d };
-}
-
-export function isDecVal(value: unknown): value is DecVal {
-	if (typeof value !== "object" || value === null) return false;
-	const candidate = value as Partial<DecVal>;
-	return candidate.__piDec === true && candidate.d instanceof Decimal;
-}
-
 function decimalFromString(value: string): DecimalValue {
 	if (!DECIMAL_LITERAL.test(value)) throw new Error("invalid decimal literal");
 	const decimal = new Decimal(value);
@@ -42,7 +30,6 @@ function decimalFromString(value: string): DecimalValue {
 }
 
 export function toDec(value: unknown): DecimalValue {
-	if (isDecVal(value)) return value.d;
 	if (value instanceof Decimal) return value;
 	if (typeof value === "string") return decimalFromString(value);
 	if (typeof value === "number") {

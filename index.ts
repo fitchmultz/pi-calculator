@@ -1,4 +1,5 @@
 import { Type } from "typebox";
+import { Text } from "@earendil-works/pi-tui";
 import { defineTool, type ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { DECIMAL_PRECISION } from "./decimal.ts";
 import { evaluateExpression, MAX_EXPRESSION_LENGTH } from "./eval.ts";
@@ -6,29 +7,30 @@ import { evaluateExpression, MAX_EXPRESSION_LENGTH } from "./eval.ts";
 const calculatorTool = defineTool({
 	name: "calculator",
 	label: "Calculator",
-	description: "Evaluate numeric and scientific expressions deterministically.",
-	promptSnippet: "Evaluate arithmetic, factorials, percentages, roots, logs, trig, and simple stats",
+	description: `Calculate arithmetic, scientific functions and statistics with ${DECIMAL_PRECISION}-significant-digit decimal precision. Returns one number or a flat array of numbers.`,
+	promptSnippet: "Calculate numeric answers and verify arithmetic",
 	promptGuidelines: [
-		"Use calculator for non-trivial math instead of computing in prose.",
-		`Calculator rounds input literals to ${DECIMAL_PRECISION}-digit precision and returns exact decimal strings; do not recompute its output. Use ^ or ** for powers, PI and E for constants, and log()/ln(), log2(), or log10() for logarithms.`,
-		"Calculator trig uses radians; deg(90) converts degrees to radians, while rad(PI) converts radians to degrees.",
-		"Calculator supports percent(value, of), n!/fac(n) through 1000, and mean/median/stdev/stdevs arrays; expensive operations use per-expression work budgets, with at most 100 circular trig calls.",
+		"Use calculator for non-trivial calculations; simple arithmetic does not need a tool call. Results are rounded decimal strings. In calculator expressions, use sum([...]) for totals and roundTo(value, places) for requested rounding. Put independent results in a flat array.",
 	],
+	constrainedSampling: { type: "json_schema", strict: "prefer" },
 	parameters: Type.Object(
 		{
 			expression: Type.String({
 				minLength: 1,
 				maxLength: MAX_EXPRESSION_LENGTH,
-				description: "Math expression, e.g. '(12.5 * 1.0825) ^ 3', '10!', 'sqrt(144)', 'sin(PI/4)', 'mean([2,4,6,8])'",
+				description: "Numeric expression: + - * / % ^ **, PI, E, roots, trig, n! (0–1000), sum/mean/median. log/ln are natural; log2/log10 choose a base. Use expm1(x) for exp(x)-1 and log1p(x) for ln(1+x) when x is small. Trig uses radians; radians(degrees) and degrees(radians) convert angles. percent(rate, amount) gives rate% of amount. stdev(array) is population; stdevs(array) is sample. roundTo(value, places) rounds halves away from zero.",
 			}),
 		},
 		{ additionalProperties: false },
 	),
+	renderCall(args, theme) {
+		return new Text(theme.fg("toolTitle", theme.bold("calculator ")) + theme.fg("dim", JSON.stringify(args.expression ?? "")), 0, 0);
+	},
 	async execute(_toolCallId, params) {
 		const evaluated = evaluateExpression(params.expression);
-		const displayExpression = JSON.stringify(evaluated.expression).slice(1, -1);
+		const text = Array.isArray(evaluated.value) ? JSON.stringify(evaluated.value) : evaluated.value;
 		return {
-			content: [{ type: "text", text: `${displayExpression} = ${evaluated.value}` }],
+			content: [{ type: "text", text }],
 			details: evaluated,
 		};
 	},
