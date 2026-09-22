@@ -1,6 +1,6 @@
 {
   "name": "pi-calculator",
-  "version": "2.0.2",
+  "version": "3.0.0",
   "private": true,
   "description": "Deterministic high-precision calculator tool for Pi",
   "type": "module",
@@ -44,10 +44,14 @@
   },
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-tui": "*",
     "typebox": "*"
   },
   "peerDependenciesMeta": {
     "@earendil-works/pi-coding-agent": {
+      "optional": true
+    },
+    "@earendil-works/pi-tui": {
       "optional": true
     },
     "typebox": {
@@ -56,8 +60,9 @@
   },
   "devDependencies": {
     "@earendil-works/pi-coding-agent": "0.87.0",
+    "@earendil-works/pi-tui": "0.87.0",
     "@types/node": "22.19.19",
-    "typebox": "1.3.7",
+    "typebox": "1.3.34",
     "typescript": "7.0.2"
   }
 }

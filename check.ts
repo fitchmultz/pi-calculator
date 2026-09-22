@@ -1,8 +1,12 @@
+import { deepStrictEqual } from "node:assert";
 import DecimalBase from "decimal.js";
 import { DECIMAL_PRECISION, Decimal as CalculatorDecimal, MAX_EXPRESSION_DEPTH } from "./decimal.ts";
 import { evaluateExpression } from "./eval.ts";
 
-const cases: Array<[string, string]> = [
+const cases: Array<[string, string | string[]]> = [
+	["[0.1 + 0.2, 2^64, 1e1000]", ["0.3", "18446744073709551616", "1e+1000"]],
+	["[stdev([2,4,4,4,5,5,7,9]), stdevs([2,4,4,4,5,5,7,9])]", ["2", "2.138089935299395077476427847038028172432"]],
+	["[]", []],
 	["2 + 2", "4"],
 	["0.1 + 0.2", "0.3"],
 	[".5 + .25", "0.75"],
@@ -16,7 +20,7 @@ const cases: Array<[string, string]> = [
 	["(12.5 * 1.0825) ** 3", "2477.500518798828125"],
 	["sqrt(144)", "12"],
 	["sin(PI/2)", "1"],
-	["sin(deg(90))", "1"],
+	["sin(radians(90))", "1"],
 	["sinh(0) + cosh(0) + tanh(0)", "1"],
 	["tanh(10000)", "1"],
 	["asinh(0) + acosh(1) + atanh(0)", "0"],
@@ -42,13 +46,16 @@ const cases: Array<[string, string]> = [
 	["max([3,1,2])", "3"],
 	["[1,2,3][2]", "3"],
 	["percent(15, 200)", "30"],
+	["log(1000)", "6.907755278982137052053974364053092622803"],
+	["roundTo(-1.25, 1)", "-1.3"],
+	["log1p(-1e-20)", "-1.000000000000000000005e-20"],
 	["200 * 15 / 100", "30"],
 	["roundTo(0.1 + 0.2, 1)", "0.3"],
 	["roundTo(125, -1)", "130"],
 	["ln(1000)", "6.907755278982137052053974364053092622803"],
 	["exp(ln(1000))", "999.9999999999999999999999999999999999997"],
 	["E", "2.718281828459045235360287471352662497757"],
-	["rad(PI)", "180"],
+	["degrees(PI)", "180"],
 	["median([999999999999999, 1000000000000000, 1000000000000001])", "1000000000000000"],
 	["hypot(3, 4)", "5"],
 	["hypot([3, 4])", "5"],
@@ -78,7 +85,7 @@ const cases: Array<[string, string]> = [
 
 for (const [expression, expected] of cases) {
 	const { value } = evaluateExpression(expression);
-	if (value !== expected) throw new Error(`expected ${expected} for "${expression}", got ${value}`);
+	deepStrictEqual(value, expected, `unexpected result for "${expression}"`);
 }
 
 function expectFailure(expression: string, expectedMessage?: string): void {
@@ -96,6 +103,18 @@ function expectFailure(expression: string, expectedMessage?: string): void {
 
 for (const [expression, message] of [
 	["", "Expression is empty"],
+	["[1,[2]]", "did not evaluate to a number"],
+	['[1,"2"]', "did not evaluate to a number"],
+	['"2"', "did not evaluate to a number"],
+	["[1,1/0]", "Result is Infinity"],
+	["[1,-1/0]", "Result is -Infinity"],
+	["[1,sqrt(-1)]", "Result is NaN"],
+	["1/0", "Result is Infinity"],
+	["sqrt(-1)", "Result is NaN"],
+	["deg(90)", "undefined variable: deg"],
+	["rad(PI)", "undefined variable: rad"],
+	["radians(90, 180)", "radians() needs exactly 1 argument"],
+	["degrees(PI, PI)", "degrees() needs exactly 1 argument"],
 	["({}).constructor", "Unknown character"],
 	["random()", "undefined variable: random"],
 	["1 < 2", "Unknown character"],
@@ -120,6 +139,13 @@ for (const [expression, message] of [
 	["median([1,1/0,2])", "median(): invalid number at index 1"],
 	["mean([1,1/0])", "mean(): invalid number at index 1"],
 	['min("0x10")', "min(): invalid number at index 0"],
+	["min([1,1/0])", "min(): invalid number at index 1"],
+	["max(1,-1/0)", "max(): invalid number at index 1"],
+	["hypot(1,1/0)", "hypot(): invalid number at index 1"],
+	["min([sqrt(-1),1])", "min(): invalid number at index 0"],
+	["sum([1,1/0])", "sum(): invalid number at index 1"],
+	["stdev([1,1/0])", "stdev(): invalid number at index 1"],
+	["stdevs([1,1/0])", "stdevs(): invalid number at index 1"],
 	["roundTo(1.5, 2.7)", "roundTo() digits must be an integer"],
 	["[1,2][1.5]", "array index needs an integer"],
 	['[1,2]["constructor"]', "array index needs an integer"],
@@ -139,6 +165,13 @@ for (const [expression, message] of [
 ] as const) {
 	expectFailure(expression, message);
 }
+
+const arrayResult = evaluateExpression(`[${Array(1000).fill("PI").join(",")}]`);
+if (!Array.isArray(arrayResult.value) || arrayResult.value.length !== 1000) {
+	throw new Error("finite array result was truncated");
+}
+if (Buffer.byteLength(JSON.stringify(arrayResult)) > 50 * 1024) throw new Error("array result exceeded 50 KiB");
+expectFailure(`[${Array(1200).fill("PI").join(",")}]`, "Result exceeds 50 KiB output limit");
 
 const rejectionStarted = performance.now();
 expectFailure("999999999999!", "factorial operand too large");

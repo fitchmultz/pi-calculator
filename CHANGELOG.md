@@ -1,5 +1,28 @@
 # Changelog
 
+## 3.0.0 - 2026-09-21
+
+### Breaking changes
+
+- Replace `deg(x)` with `radians(x)` for degrees-to-radians conversion, and `rad(x)` with `degrees(x)` for radians-to-degrees conversion. The old names are removed without aliases.
+- Return value-only model content instead of `expression = value`. Details retain the trimmed expression and a value that can now be a decimal string or an array of decimal strings.
+
+### Added
+
+- Evaluate independent calculations in one flat array. Reject nested, nonnumeric, or nonfinite results as a whole, and reject serialized expression/value details larger than 50 KiB.
+- Show safely escaped expressions in native Pi tool cards while keeping model output concise.
+- Request native strict-prefer JSON-schema sampling with provider-controlled fallback.
+
+### Changed
+
+- Pass Decimal values directly through the parser while preserving decimal-literal precision, numerical algorithms, private contexts, and work limits.
+- Clarify percentage argument order, population/sample standard deviation, logarithm bases, small-argument `expm1`/`log1p`, and when to combine calculations or skip a trivial tool call.
+- Qualify development against Pi 0.87.0 and TypeBox 1.3.34; declare host-provided Pi TUI as an optional peer. The package remains private and Git-distributed.
+
+### Fixed
+
+- Require finite inputs consistently for aggregates, including `min`, `max`, and `hypot`/`pyt`.
+
 ## 2.0.2 - 2026-09-18
 
 ### Fixed
