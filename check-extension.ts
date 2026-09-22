@@ -42,9 +42,6 @@ try {
 	const multilineResult = await calculator.execute("check-multiline", multilineInput, undefined, undefined, undefined as never);
 	const multilineText = multilineResult.content[0];
 	if (multilineText?.type !== "text") throw new Error("multiline calculator result was not text");
-	if (Buffer.byteLength(multilineText.text) > 50 * 1024 || multilineText.text.split("\n").length > 2000) {
-		throw new Error("multiline calculator result exceeded Pi output limits");
-	}
 	if (multilineText.text !== "2") throw new Error("multiline calculator result was not value-only");
 
 	deepStrictEqual(calculator.constrainedSampling, { type: "json_schema", strict: "prefer" });
