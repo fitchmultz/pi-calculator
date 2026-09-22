@@ -15,6 +15,6 @@ concurrency:
 
 jobs:
   compatibility:
-    uses: fitchmultz/.github/.github/workflows/pi-compatibility.yml@117b227140265329055bcda5927ac170c6301d75 # v1.0.0
+    uses: ./.github/workflows/qualify.yml
     with:
       automation-ref: 117b227140265329055bcda5927ac170c6301d75 # v1.0.0
