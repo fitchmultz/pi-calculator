@@ -221,6 +221,7 @@ function hyperbolic(name: string, fn: (x: DecimalValue) => DecimalValue): (x: De
 function modulo(a: unknown, b: unknown) {
 	const left = toDec(a);
 	const right = toDec(b);
+	if (right.isZero()) throw new Error("modulo by zero");
 	const exponentGap = left.isFinite() && right.isFinite() ? Math.abs(left.e - right.e) : 0;
 	if (exponentGap > MAX_MODULO_EXPONENT_GAP) {
 		throw new Error(`modulo exponent gap too large (max ${MAX_MODULO_EXPONENT_GAP})`);

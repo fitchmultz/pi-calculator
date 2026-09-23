@@ -180,6 +180,7 @@ for (const [expression, message] of [
 
 expectFailure("1/(1/0)");
 expectFailure("[1/0,2][1]");
+expectFailure("(5 % 0)^0");
 
 const arrayResult = evaluateExpression(`[${Array(1000).fill("PI").join(",")}]`);
 if (!Array.isArray(arrayResult.value) || arrayResult.value.length !== 1000) {
