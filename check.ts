@@ -1,5 +1,5 @@
 import { deepStrictEqual } from "node:assert";
-import { spawnSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import DecimalBase from "decimal.js";
 import { DECIMAL_PRECISION, Decimal as CalculatorDecimal, MAX_EXPRESSION_DEPTH } from "./decimal.ts";
 import { evaluateExpression } from "./eval.ts";
@@ -103,13 +103,11 @@ for (const [expression, expected] of cases) {
 
 // Keep a regression in a timed process: the old atan implementation loops forever.
 const extremeAtan = "[atan(1e4500000000000001),atan(-1e4500000000000001),atan(1e-9000000000000000),atan2(1e4500000000000001,-1),atan2(1e-9000000000000000,1),atan2(1e-9000000000000000,-1),atan2(-1e-9000000000000000,-1),atan2(1,1e9000000000000000)]";
-const probe = spawnSync(process.execPath, [
+const output = execFileSync(process.execPath, [
 	"--experimental-strip-types", "--input-type=module", "-e",
 	`import { evaluateExpression } from ${JSON.stringify(new URL("./eval.ts", import.meta.url).href)}; console.log(JSON.stringify(evaluateExpression(${JSON.stringify(extremeAtan)}).value));`,
 ], { encoding: "utf8", timeout: 2_000 });
-if (probe.error) throw probe.error;
-if (probe.status !== 0) throw new Error(`atan extremes failed: ${probe.stderr}`);
-deepStrictEqual(JSON.parse(probe.stdout), [
+deepStrictEqual(JSON.parse(output), [
 	"1.570796326794896619231321691639751442099",
 	"-1.570796326794896619231321691639751442099",
 	"1e-9000000000000000",
