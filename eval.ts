@@ -143,9 +143,13 @@ function standardDeviation(xs: DecimalValue[], sample: boolean): DecimalValue {
 	// Center on an input first so a large common offset cannot round away the spread.
 	const shifted = xs.map((x) => new GuardDecimal(x).minus(xs[0]!));
 	const center = sum(shifted, GuardDecimal, xs.length);
-	const squared = shifted.map((x) => x.minus(center).pow(2));
+	const deviations = shifted.map((x) => x.minus(center));
+	const scale = GuardDecimal.max(...deviations.map((x) => x.abs()));
+	if (scale.isZero()) return new Decimal(0);
+	// Scale before squaring so intermediate variance cannot underflow or overflow.
+	const squared = deviations.map((x) => x.div(scale).pow(2));
 	return new Decimal(sum(squared, GuardDecimal, sample ? xs.length - 1 : xs.length)
-		.sqrt().toSignificantDigits(DECIMAL_PRECISION));
+		.sqrt().times(scale).toSignificantDigits(DECIMAL_PRECISION));
 }
 
 function tangent(value: DecimalValue): DecimalValue {
