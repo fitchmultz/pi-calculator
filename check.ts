@@ -118,10 +118,10 @@ for (const [expression, message] of [
 	["[1,[2]]", "did not evaluate to a number"],
 	['[1,"2"]', "did not evaluate to a number"],
 	['"2"', "did not evaluate to a number"],
-	["[1,1/0]", "Result is Infinity"],
-	["[1,-1/0]", "Result is -Infinity"],
+	["[1,1/0]", "division by zero"],
+	["[1,-1/0]", "division by zero"],
 	["[1,sqrt(-1)]", "Result is NaN"],
-	["1/0", "Result is Infinity"],
+	["1/0", "division by zero"],
 	["sqrt(-1)", "Result is NaN"],
 	["deg(90)", "undefined variable: deg"],
 	["rad(PI)", "undefined variable: rad"],
@@ -148,16 +148,16 @@ for (const [expression, message] of [
 	['mean(["0x10"])', "mean(): invalid number at index 0"],
 	["median([sqrt(-1),1,2])", "median(): invalid number at index 0"],
 	["median([1,2,sqrt(-1)])", "median(): invalid number at index 2"],
-	["median([1,1/0,2])", "median(): invalid number at index 1"],
-	["mean([1,1/0])", "mean(): invalid number at index 1"],
+	["median([1,1/0,2])", "division by zero"],
+	["mean([1,1/0])", "division by zero"],
 	['min("0x10")', "min(): invalid number at index 0"],
-	["min([1,1/0])", "min(): invalid number at index 1"],
-	["max(1,-1/0)", "max(): invalid number at index 1"],
-	["hypot(1,1/0)", "hypot(): invalid number at index 1"],
+	["min([1,1/0])", "division by zero"],
+	["max(1,-1/0)", "division by zero"],
+	["hypot(1,1/0)", "division by zero"],
 	["min([sqrt(-1),1])", "min(): invalid number at index 0"],
-	["sum([1,1/0])", "sum(): invalid number at index 1"],
-	["stdev([1,1/0])", "stdev(): invalid number at index 1"],
-	["stdevs([1,1/0])", "stdevs(): invalid number at index 1"],
+	["sum([1,1/0])", "division by zero"],
+	["stdev([1,1/0])", "division by zero"],
+	["stdevs([1,1/0])", "division by zero"],
 	["roundTo(1.5, 2.7)", "roundTo() digits must be an integer"],
 	["[1,2][1.5]", "array index needs an integer"],
 	['[1,2]["constructor"]', "array index needs an integer"],
@@ -177,6 +177,9 @@ for (const [expression, message] of [
 ] as const) {
 	expectFailure(expression, message);
 }
+
+expectFailure("1/(1/0)");
+expectFailure("[1/0,2][1]");
 
 const arrayResult = evaluateExpression(`[${Array(1000).fill("PI").join(",")}]`);
 if (!Array.isArray(arrayResult.value) || arrayResult.value.length !== 1000) {

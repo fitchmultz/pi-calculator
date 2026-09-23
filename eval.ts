@@ -297,7 +297,12 @@ parser.binaryOps = nullMap({
 	"+": (a, b) => toDec(a).plus(toDec(b)),
 	"-": (a, b) => toDec(a).minus(toDec(b)),
 	"*": (a, b) => toDec(a).times(toDec(b)),
-	"/": (a, b) => toDec(a).div(toDec(b)),
+	"/": (a, b) => {
+		const numerator = toDec(a);
+		const denominator = toDec(b);
+		if (denominator.isZero()) throw new Error("division by zero");
+		return numerator.div(denominator);
+	},
 	"%": modulo,
 	"^": (a, b) => toDec(a).pow(toDec(b)),
 	"[": arrayIndex,
