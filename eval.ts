@@ -12,6 +12,8 @@ const TRIG_WORK = 100;
 const PI = new Decimal("3.141592653589793238462643383279502884197");
 const E = new Decimal("2.718281828459045235360287471352662497757");
 const MAX_TRIG_ABS = new Decimal("1e100");
+const SMALL_ATAN_ABS = new Decimal("1e-100");
+const LARGE_ATAN_ABS = new Decimal("1e100");
 const GUARD_DECIMAL_CONFIG = {
 	defaults: true,
 	precision: DECIMAL_PRECISION + 10,
@@ -157,6 +159,22 @@ function tangent(value: DecimalValue): DecimalValue {
 	return new Decimal(x.sin().div(x.cos()).toSignificantDigits(DECIMAL_PRECISION));
 }
 
+function arctangent(value: DecimalValue): DecimalValue {
+	// Decimal.atan can loop when argument reduction overflows or underflows.
+	const abs = value.abs();
+	if (abs.lt(SMALL_ATAN_ABS)) return value;
+	if (abs.gt(LARGE_ATAN_ABS)) return PI.div(value.isNegative() ? -2 : 2);
+	return Decimal.atan(value);
+}
+
+function arctangent2(y: DecimalValue, x: DecimalValue): DecimalValue {
+	if (x.isZero() || y.isZero() || !x.isFinite() || !y.isFinite()) return Decimal.atan2(y, x);
+	const ratio = y.div(x);
+	if (ratio.abs().lt(SMALL_ATAN_ABS)) return x.isNegative() ? (y.isNegative() ? PI.negated() : PI) : ratio;
+	if (ratio.abs().gt(LARGE_ATAN_ABS)) return PI.div(y.isNegative() ? -2 : 2);
+	return Decimal.atan2(y, x);
+}
+
 function expm1(value: DecimalValue): DecimalValue {
 	const x = new GuardDecimal(value.toString());
 	if (x.abs().gte(0.1)) {
@@ -262,7 +280,7 @@ const decimalUnary: Record<string, (x: DecimalValue) => DecimalValue> = {
 	tan: trigonometric("tan", tangent, MAX_TRIG_ABS),
 	asin: trigonometric("asin", (x) => Decimal.asin(x)),
 	acos: trigonometric("acos", (x) => Decimal.acos(x)),
-	atan: trigonometric("atan", (x) => Decimal.atan(x)),
+	atan: trigonometric("atan", arctangent),
 	sinh: hyperbolic("sinh", (x) => Decimal.sinh(x)),
 	cosh: hyperbolic("cosh", (x) => Decimal.cosh(x)),
 	tanh: hyperbolic("tanh", (x) => Decimal.tanh(x)),
@@ -330,7 +348,7 @@ parser.functions = nullMap({
 		requireArity("atan2", args, 2);
 		const values = args.map(toDec);
 		spendExpensiveWork(TRIG_WORK);
-		return Decimal.atan2(values[0]!, values[1]!);
+		return arctangent2(values[0]!, values[1]!);
 	},
 	min: (...args: unknown[]) => Decimal.min(...decimalArguments(args, "min")),
 	max: (...args: unknown[]) => Decimal.max(...decimalArguments(args, "max")),
