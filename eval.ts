@@ -337,7 +337,12 @@ parser.functions = nullMap({
 	roundTo,
 	percent: (...args: unknown[]) => {
 		requireArity("percent", args, 2);
-		return toDec(args[1]).times(toDec(args[0])).div(100);
+		const rate = toDec(args[0]);
+		const amount = toDec(args[1]);
+		// Scale the larger factor first so intermediate arithmetic stays in range.
+		return amount.abs().gte(rate.abs())
+			? amount.div(100).times(rate)
+			: rate.div(100).times(amount);
 	},
 	radians: (...args: unknown[]) => {
 		requireArity("radians", args, 1);
