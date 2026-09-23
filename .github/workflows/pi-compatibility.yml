@@ -17,4 +17,4 @@ jobs:
   compatibility:
     uses: ./.github/workflows/qualify.yml
     with:
-      automation-ref: 117b227140265329055bcda5927ac170c6301d75 # v1.0.0
+      automation-ref: fe049ea97a8c91d1a4c3a0958a85b37c7759dcc6 # v1.0.0
