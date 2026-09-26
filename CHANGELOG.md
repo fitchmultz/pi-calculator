@@ -10,7 +10,6 @@
 
 - Qualify development against Pi 0.87.1 and the TypeBox version Pi ships (1.3.27), on Node 24 for both official Pi and the maintained fork.
 - Type-check with Node 24 types and explicit Node module resolution under TypeScript 7.
-- Keep registry tarball URLs out of the lockfile so installs resolve through whichever registry is configured.
 
 ## 3.0.0 - 2026-09-21
 
