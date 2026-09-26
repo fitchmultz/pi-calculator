@@ -1,6 +1,6 @@
 {
   "name": "pi-calculator",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "private": true,
   "description": "Deterministic high-precision calculator tool for Pi",
   "type": "module",
@@ -24,11 +24,11 @@
     "url": "git+https://github.com/fitchmultz/pi-calculator.git"
   },
   "engines": {
-    "node": ">=22.19.0"
+    "node": ">=24.0.0"
   },
   "scripts": {
-    "check": "node --experimental-strip-types check.ts",
-    "check:load": "node --experimental-strip-types check-extension.ts",
+    "check": "node check.ts",
+    "check:load": "node check-extension.ts",
     "typecheck": "tsc",
     "verify": "npm run typecheck && npm run check && npm run check:load",
     "check:compat": "npm run verify"
@@ -59,10 +59,10 @@
     }
   },
   "devDependencies": {
-    "@earendil-works/pi-coding-agent": "0.87.0",
-    "@earendil-works/pi-tui": "0.87.0",
-    "@types/node": "22.19.19",
-    "typebox": "1.3.34",
+    "@earendil-works/pi-coding-agent": "0.87.1",
+    "@earendil-works/pi-tui": "0.87.1",
+    "@types/node": "24.19.0",
+    "typebox": "1.3.27",
     "typescript": "7.0.2"
   }
 }

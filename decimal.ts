@@ -1,4 +1,4 @@
-import DecimalBase from "decimal.js";
+import { Decimal as DecimalBase } from "decimal.js";
 
 export const DECIMAL_PRECISION = 40;
 export const MAX_EXPRESSION_DEPTH = 128;

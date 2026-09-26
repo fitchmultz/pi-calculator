@@ -2,7 +2,7 @@
 
 A deterministic calculator tool for [Pi](https://github.com/earendil-works/pi) with 40-significant-digit decimal precision. Input literals and arithmetic are rounded using half-up rounding; results are decimal strings, not lossless symbolic answers.
 
-Requires Pi 0.84.0 or later and Node.js 22.19.0 or later. Use the latest Pi for its current model catalog, including GPT-6 Astra. Works with official Pi and the [fitchmultz/pi fork](https://github.com/fitchmultz/pi).
+Requires Node.js 24 or later. Qualified against official Pi 0.87.1 and the [fitchmultz/pi fork](https://github.com/fitchmultz/pi); use the latest Pi for its current model catalog, including GPT-6 Astra.
 
 ## Install
 

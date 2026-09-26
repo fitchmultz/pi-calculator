@@ -1,5 +1,16 @@
 # Changelog
 
+## 4.0.0 - 2026-09-26
+
+### Breaking changes
+
+- Require Node.js 24 or later.
+
+### Changed
+
+- Qualify development against Pi 0.87.1 and the TypeBox version Pi ships (1.3.27), on Node 24 for both official Pi and the maintained fork.
+- Type-check with Node 24 types and explicit Node module resolution under TypeScript 7.
+
 ## 3.0.0 - 2026-09-21
 
 ### Breaking changes

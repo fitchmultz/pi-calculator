@@ -1,13 +1,13 @@
 {
   "compilerOptions": {
-    "allowImportingTsExtensions": true,
-    "esModuleInterop": true,
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "target": "es2024",
+    "module": "nodenext",
+    "types": ["node"],
     "noEmit": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "target": "ES2023"
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true
   },
   "include": ["*.ts"]
 }
