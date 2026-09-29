@@ -2,7 +2,7 @@
 
 A deterministic calculator tool for [Pi](https://github.com/earendil-works/pi) with 40-significant-digit decimal precision. Input literals and arithmetic are rounded using half-up rounding; results are decimal strings, not lossless symbolic answers.
 
-Requires Node.js 24 or later. Qualified against official Pi 0.87.1 and the [fitchmultz/pi fork](https://github.com/fitchmultz/pi); use the latest Pi for its current model catalog, including GPT-6 Astra.
+Requires Node.js 24 or later. Development targets official Pi 0.99.1 and the [fitchmultz/pi fork](https://github.com/fitchmultz/pi). Each host is qualified separately; a matching version string is not a compatibility result.
 
 ## Install
 
@@ -56,7 +56,7 @@ Version 3 removes the old angle-conversion names: replace `deg(x)` with `radians
 ## Verification
 
 ```sh
-npm ci
+npm ci --ignore-scripts
 npm run verify
 ```
 
