@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 4.1.0 - 2026-10-01
 
 - Require Pi 1.0.0 and qualify its exact published cohort with host TypeBox 1.3.27.
 - Expose the existing expression/value outcome through native structured output for nested callers, preserving decimal strings, scalar/array behavior, grammar, work limits, errors, and rendering.

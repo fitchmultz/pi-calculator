@@ -7,7 +7,7 @@ Requires Node.js 24 or later and Pi 1.0.0 or later. Development targets official
 ## Install
 
 ```sh
-pi install git:github.com/fitchmultz/pi-calculator
+pi install git:github.com/fitchmultz/pi-calculator@v4.1.0
 ```
 
 This package is distributed through Git, not npm. It adds one `calculator` tool with one required `expression` string. Pi supplies the schema and terminal UI libraries; the calculator uses `decimal.js` and `expr-eval-fork` for evaluation.
