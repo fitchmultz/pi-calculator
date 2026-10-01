@@ -23,6 +23,10 @@ const calculatorTool = defineTool({
 		},
 		{ additionalProperties: false },
 	),
+	outputSchema: Type.Object({
+		expression: Type.String(),
+		value: Type.Union([Type.String(), Type.Array(Type.String())]),
+	}, { additionalProperties: false }),
 	renderCall(args, theme) {
 		return new Text(theme.fg("toolTitle", theme.bold("calculator ")) + theme.fg("dim", JSON.stringify(args.expression ?? "")), 0, 0);
 	},
@@ -32,6 +36,7 @@ const calculatorTool = defineTool({
 		return {
 			content: [{ type: "text", text }],
 			details: evaluated,
+			structuredContent: evaluated,
 		};
 	},
 });

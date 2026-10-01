@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Require Pi 1.0.0 and qualify its exact published cohort with host TypeBox 1.3.27.
+- Expose the existing expression/value outcome through native structured output for nested callers, preserving decimal strings, scalar/array behavior, grammar, work limits, errors, and rendering.
+- Exercise native nested scalar/array receipts and distinct validation, policy, and evaluation failures without provider calls. Keep Git/GitHub-only distribution.
+
 ## 4.0.0 - 2026-09-26
 
 ### Breaking changes

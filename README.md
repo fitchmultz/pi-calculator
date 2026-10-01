@@ -2,7 +2,7 @@
 
 A deterministic calculator tool for [Pi](https://github.com/earendil-works/pi) with 40-significant-digit decimal precision. Input literals and arithmetic are rounded using half-up rounding; results are decimal strings, not lossless symbolic answers.
 
-Requires Node.js 24 or later. Development targets official Pi 0.99.2 and the [fitchmultz/pi fork](https://github.com/fitchmultz/pi). Each host is qualified separately; a matching version string is not a compatibility result.
+Requires Node.js 24 or later and Pi 1.0.0 or later. Development targets official Pi 1.0.0 and the [fitchmultz/pi fork](https://github.com/fitchmultz/pi). Each host is qualified separately; a matching version string is not a compatibility result.
 
 ## Install
 
@@ -43,7 +43,7 @@ Aggregates require finite numeric elements. Sums preserve cancellation remainder
 
 The tool returns a finite scalar or flat array of finite scalars, represented as decimal strings. A nested array, nonnumeric result, or nonfinite member fails the whole expression. Large finite values use scientific notation.
 
-Model-facing content contains only the value, such as `0.3`, or a JSON array of strings, such as `["0.3","18446744073709551616"]`. Structured details retain `{ expression, value }`, where `expression` is trimmed and `value` is a string or string array. Pi's tool card displays the safely escaped expression above the result.
+Model-facing content contains only the value, such as `0.3`, or a JSON array of strings, such as `["0.3","18446744073709551616"]`. Structured details retain `{ expression, value }`, where `expression` is trimmed and `value` is a string or string array. The same stable outcome is exposed as native `structuredContent` with an `outputSchema`, so nested/codemode callers receive decimal strings without reparsing display text. Evaluation failures still throw and become native error results; schema and policy checks remain Pi-owned. Pi's tool card displays the safely escaped expression above the result.
 
 Expressions are limited to 4,096 characters and 128 nesting levels. Serialized expression/value details must fit within 50 KiB; oversized results are rejected rather than truncated. The tool requests native strict JSON-schema sampling where the provider supports it and uses Pi's normal fallback elsewhere.
 
@@ -60,7 +60,7 @@ npm ci --ignore-scripts
 npm run verify
 ```
 
-Verification includes numerical and work-limit checks, schema and result contracts, actual extension loading, and native tool-card rendering.
+Verification includes numerical and work-limit checks, schema and structured result contracts, actual extension loading, native nested validation/policy/evaluation errors, and native tool-card rendering. The exact development cohort uses TypeBox 1.3.27; no evaluator or grammar compatibility layer is needed.
 
 Update the development TypeBox pin alongside the qualified Pi host, using the version that host ships. Independent TypeBox updates are disabled in Renovate because they install duplicate host schema libraries and slow development startup. Each compatibility lane still selects its host's TypeBox version.
 
