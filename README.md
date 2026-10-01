@@ -62,4 +62,6 @@ npm run verify
 
 Verification includes numerical and work-limit checks, schema and result contracts, actual extension loading, and native tool-card rendering.
 
+Update the development TypeBox pin alongside the qualified Pi host, using the version that host ships. Independent TypeBox updates are disabled in Renovate because they install duplicate host schema libraries and slow development startup. Each compatibility lane still selects its host's TypeBox version.
+
 Pi extensions execute with full system access. Review the source before installing.
