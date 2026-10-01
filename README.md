@@ -2,7 +2,7 @@
 
 A deterministic calculator tool for [Pi](https://github.com/earendil-works/pi) with 40-significant-digit decimal precision. Input literals and arithmetic are rounded using half-up rounding; results are decimal strings, not lossless symbolic answers.
 
-Requires Node.js 24 or later. Development targets official Pi 0.99.1 and the [fitchmultz/pi fork](https://github.com/fitchmultz/pi). Each host is qualified separately; a matching version string is not a compatibility result.
+Requires Node.js 24 or later. Development targets official Pi 0.99.2 and the [fitchmultz/pi fork](https://github.com/fitchmultz/pi). Each host is qualified separately; a matching version string is not a compatibility result.
 
 ## Install
 
