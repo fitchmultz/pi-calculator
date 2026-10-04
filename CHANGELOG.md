@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.1.1 - 2026-10-04
+
+- Publish the existing calculator as the public scoped package `@fitchmultz/pi-calculator`, continuing the 4.1.x version line. The unrelated unscoped npm package is not this project.
+- Lead installation guidance with the scoped npm source while preserving Git installation, existing tags, and the calculator's numerical, schema, structured-result, rendering, and native-composition contracts.
+- Qualify the latest stable official Pi and maintained fork main with once-frozen host identities, and add a main-only gated repository release pipeline.
+
 ## 4.1.0 - 2026-10-01
 
 - Require Pi 1.0.0 and qualify its exact published cohort with host TypeBox 1.3.27.

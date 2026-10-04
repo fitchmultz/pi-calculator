@@ -2,15 +2,27 @@
 
 A deterministic calculator tool for [Pi](https://github.com/earendil-works/pi) with 40-significant-digit decimal precision. Input literals and arithmetic are rounded using half-up rounding; results are decimal strings, not lossless symbolic answers.
 
-Requires Node.js 24 or later and Pi 1.0.0 or later. Development targets official Pi 1.0.0 and the [fitchmultz/pi fork](https://github.com/fitchmultz/pi). Each host is qualified separately; a matching version string is not a compatibility result.
+Requires Node.js 24 or later and Pi 1.0.0 or later. Release qualification selects the latest stable official Pi and the [fitchmultz/pi fork](https://github.com/fitchmultz/pi) main once per run, freezing their version and commit throughout the checks. Each host is qualified separately; a matching version string is not a compatibility result.
 
 ## Install
 
 ```sh
+pi install npm:@fitchmultz/pi-calculator
+```
+
+**The unscoped `pi-calculator` npm package is NOT this project.** This repository publishes only `@fitchmultz/pi-calculator`.
+
+Git remains supported as a fallback:
+
+```sh
+pi install git:github.com/fitchmultz/pi-calculator
+# Existing versioned tags remain installable:
 pi install git:github.com/fitchmultz/pi-calculator@v4.1.0
 ```
 
-This package is distributed through Git, not npm. It adds one `calculator` tool with one required `expression` string. Pi supplies the schema and terminal UI libraries; the calculator uses `decimal.js` and `expr-eval-fork` for evaluation.
+When switching from Git to npm, remove the exact Git source shown by `pi list` before installing the scoped package to avoid loading the calculator twice. Existing Git installs can stay on Git.
+
+The package adds one `calculator` tool with one required `expression` string. Pi supplies the schema and terminal UI libraries; the calculator uses `decimal.js` and `expr-eval-fork` for evaluation.
 
 ## Expressions
 
@@ -63,5 +75,7 @@ npm run verify
 Verification includes numerical and work-limit checks, schema and structured result contracts, actual extension loading, native nested validation/policy/evaluation errors, and native tool-card rendering. The exact development cohort uses TypeBox 1.3.27; no evaluator or grammar compatibility layer is needed.
 
 Update the development TypeBox pin alongside the qualified Pi host, using the version that host ships. Independent TypeBox updates are disabled in Renovate because they install duplicate host schema libraries and slow development startup. Each compatibility lane still selects its host's TypeBox version.
+
+The locked development cohort is reproducible local tooling, not a release-qualification target. CI runs the full verification against both frozen latest hosts, including fresh Git and packed npm consumers. Intentional version bumps with versioned changelog notes publish from the main-only repository pipeline when `NPM_RELEASE_ENABLED` is `true`; the release caller reuses the same frozen host inputs for qualification and publishing.
 
 Pi extensions execute with full system access. Review the source before installing.

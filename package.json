@@ -1,7 +1,10 @@
 {
-  "name": "pi-calculator",
-  "version": "4.1.0",
-  "private": true,
+  "name": "@fitchmultz/pi-calculator",
+  "version": "4.1.1",
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT",
   "description": "Deterministic high-precision calculator tool for Pi",
   "type": "module",
   "files": [
