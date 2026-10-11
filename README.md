@@ -1,6 +1,6 @@
 # pi-calculator
 
-Give [Pi](https://github.com/earendil-works/pi) a calculator with 40-significant-digit decimal precision. Check totals, percentages, scientific calculations and statistics while you work, with the expression and result visible in Pi's tool card.
+A calculator tool for [Pi](https://github.com/earendil-works/pi) that evaluates expressions with 40-significant-digit decimal precision. Ask Pi to check your math; it shows the expression and result in a tool card.
 
 ![Pi sends an expression to the calculator, which returns a decimal result or rejects an invalid expression.](.github/readme/calculator-flow.png)
 
@@ -8,7 +8,7 @@ Give [Pi](https://github.com/earendil-works/pi) a calculator with 40-significant
 
 ## Install and try it
 
-Requires **Node.js 24+** and **Pi 1.0.0+**.
+You'll need Node.js 24+ and Pi 1.0.0+.
 
 ```sh
 pi install npm:@fitchmultz/pi-calculator
@@ -21,7 +21,7 @@ In the new Pi session, try:
 Use the calculator to evaluate [0.1 + 0.2, 2^64].
 ```
 
-The calculator returns `["0.3","18446744073709551616"]`. It adds one tool, `calculator`, that takes an `expression` string.
+You'll see `["0.3","18446744073709551616"]` as the calculator's result. Pi calls the `calculator` tool with an `expression` string.
 
 For Git installs or switching an existing install to npm, see [installation options](docs/reference.md#installation-options).
 
@@ -29,7 +29,7 @@ Pi extensions run with full system access. Review the source before installing.
 
 ## Expressions
 
-Here are a few calculations to try:
+Some expressions it understands:
 
 ```text
 percent(15, 200)                 → 30
@@ -42,16 +42,15 @@ sum([1e40,1,-1e40])              → 1
 
 Arithmetic supports `+`, `-`, `*`, `/`, `%`, `^` and `**`, with `PI` and `E` as constants. Put independent calculations in one flat array, as in the first example.
 
-- **Percentages:** `percent(rate, amount)` calculates `rate%` of `amount`.
-- **Angles:** trig functions use radians; `radians(degrees)` and `degrees(radians)` convert between units.
-- **Statistics:** `stdev(array)` gives population standard deviation; `stdevs(array)` gives sample standard deviation and needs at least two values.
-- **Rounding:** `roundTo(value, places)` rounds halves away from zero. Negative places round to tens, hundreds and so on.
+Trig uses radians. If your angle is in degrees, wrap it in `radians()` as shown above; `degrees()` converts back.
 
-See the [expression reference](docs/reference.md#expressions) for all functions, indexing and precision-sensitive calculations.
+`roundTo(value, places)` rounds halves away from zero. Negative places round to tens, hundreds and so on.
+
+The [expression reference](docs/reference.md#expressions) has the full function list, including statistics and array indexing.
 
 ## Results and limits
 
-Results are decimal strings, or a flat array of decimal strings. Input literals and arithmetic use half-up rounding at 40 significant digits; calculations can still round. Large finite results use scientific notation.
+Results are decimal strings, or a flat array of decimal strings. Numbers and arithmetic are rounded to 40 significant digits using half-up rounding. Large finite results use scientific notation.
 
 Invalid expressions, nonfinite results and nested result arrays produce errors. If any result in an array is invalid, the whole expression fails. Expressions have a 4,096-character limit, plus [nesting, output and work limits](docs/reference.md#limits).
 
@@ -67,4 +66,4 @@ To work on the calculator, start with the [development guide](docs/development.m
 
 ## License
 
-[MIT](LICENSE) © Mitchell Fultz. Evaluation uses [decimal.js](https://github.com/MikeMcl/decimal.js) and [expr-eval-fork](https://github.com/jorenbroekema/expr-eval).
+[MIT](LICENSE) © Mitchell Fultz.
