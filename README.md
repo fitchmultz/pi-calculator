@@ -1,81 +1,70 @@
 # pi-calculator
 
-A deterministic calculator tool for [Pi](https://github.com/earendil-works/pi) with 40-significant-digit decimal precision. Input literals and arithmetic are rounded using half-up rounding; results are decimal strings, not lossless symbolic answers.
+Give [Pi](https://github.com/earendil-works/pi) a calculator with 40-significant-digit decimal precision. Check totals, percentages, scientific calculations and statistics while you work, with the expression and result visible in Pi's tool card.
 
-Requires Node.js 24 or later and Pi 1.0.0 or later. Release qualification selects the latest stable official Pi and the [fitchmultz/pi fork](https://github.com/fitchmultz/pi) main once per run, freezing their version and commit throughout the checks. Each host is qualified separately; a matching version string is not a compatibility result.
+![Pi sends an expression to the calculator, which returns a decimal result or rejects an invalid expression.](.github/readme/calculator-flow.png)
 
-## Install
+*Ask Pi for a calculation → the calculator evaluates it → Pi receives the result or an error.*
+
+## Install and try it
+
+Requires **Node.js 24+** and **Pi 1.0.0+**.
 
 ```sh
 pi install npm:@fitchmultz/pi-calculator
+pi
 ```
 
-**The unscoped `pi-calculator` npm package is NOT this project.** This repository publishes only `@fitchmultz/pi-calculator`.
+In the new Pi session, try:
 
-Git remains supported as a fallback:
-
-```sh
-pi install git:github.com/fitchmultz/pi-calculator
-# Existing versioned tags remain installable:
-pi install git:github.com/fitchmultz/pi-calculator@v4.1.0
+```text
+Use the calculator to evaluate [0.1 + 0.2, 2^64].
 ```
 
-When switching from Git to npm, remove the exact Git source shown by `pi list` before installing the scoped package to avoid loading the calculator twice. Existing Git installs can stay on Git.
+The calculator returns `["0.3","18446744073709551616"]`. It adds one tool, `calculator`, that takes an `expression` string.
 
-The package adds one `calculator` tool with one required `expression` string. Pi supplies the schema and terminal UI libraries; the calculator uses `decimal.js` and `expr-eval-fork` for evaluation.
+For Git installs or switching an existing install to npm, see [installation options](docs/reference.md#installation-options).
+
+Pi extensions run with full system access. Review the source before installing.
 
 ## Expressions
 
-Use the calculator for non-trivial calculations; simple arithmetic does not need a tool call. Independent results can share one flat array:
+Here are a few calculations to try:
 
 ```text
-(12.5 * 1.0825) ^ 3
-sin(radians(90))
-percent(15, 200)
-mean([2,4,6,8])
-[stdev([2,4,4,4,5,5,7,9]), stdevs([2,4,4,4,5,5,7,9])]
-[0.1 + 0.2, 2^64]
+percent(15, 200)                 → 30
+roundTo(-1.25, 1)                → -1.3
+mean([2,4,6,8])                  → 5
+sin(radians(90))                 → 1
+sum([1e40,1,-1e40])              → 1
+(12.5 * 1.0825) ^ 3              → 2477.500518798828125
 ```
 
-Operators include `+`, `-`, `*`, `/`, `%`, `^` and `**`; constants are `PI` and `E`. Arrays support zero-based indexing, such as `[1,2,3][2]`.
+Arithmetic supports `+`, `-`, `*`, `/`, `%`, `^` and `**`, with `PI` and `E` as constants. Put independent calculations in one flat array, as in the first example.
 
-Supported functions include:
+- **Percentages:** `percent(rate, amount)` calculates `rate%` of `amount`.
+- **Angles:** trig functions use radians; `radians(degrees)` and `degrees(radians)` convert between units.
+- **Statistics:** `stdev(array)` gives population standard deviation; `stdevs(array)` gives sample standard deviation and needs at least two values.
+- **Rounding:** `roundTo(value, places)` rounds halves away from zero. Negative places round to tens, hundreds and so on.
 
-- `sin`, `cos`, `tan`, their inverse/hyperbolic variants, and `atan2`. Trig uses radians. `radians(degrees)` and `degrees(radians)` convert angles.
-- `sqrt`, `cbrt`, `abs`, `pow`, `exp`, `expm1`, `ln`/`log`, `log1p`, `log2`, `log10`/`lg`. `ln` and `log` are natural logarithms. For small inputs, use `expm1(x)` for `exp(x)-1` and `log1p(x)` for `ln(1+x)` to preserve precision.
-- `ceil`, `floor`, `round`, `roundTo`, `trunc`, `sign`. `roundTo(value, places)` rounds halves away from zero; negative places round to tens, hundreds, and so on.
-- `percent(rate, amount)` gives `rate%` of `amount`: `percent(15, 200)` is `30`.
-- `sum`, `mean`, `median`, `stdev`, `stdevs` take numeric arrays. `stdev` is population standard deviation; `stdevs` is sample standard deviation and requires at least two elements.
-- `min`, `max`, `hypot`/`pyt` take either an array or individual arguments.
-- `n!` and `fac(n)` compute factorials for integers from 0 through 1000.
-
-Aggregates require finite numeric elements. Sums preserve cancellation remainders before rounding; means and even medians round after division.
+See the [expression reference](docs/reference.md#expressions) for all functions, indexing and precision-sensitive calculations.
 
 ## Results and limits
 
-The tool returns a finite scalar or flat array of finite scalars, represented as decimal strings. A nested array, nonnumeric result, or nonfinite member fails the whole expression. Large finite values use scientific notation.
+Results are decimal strings, or a flat array of decimal strings. Input literals and arithmetic use half-up rounding at 40 significant digits; calculations can still round. Large finite results use scientific notation.
 
-Model-facing content contains only the value, such as `0.3`, or a JSON array of strings, such as `["0.3","18446744073709551616"]`. Structured details retain `{ expression, value }`, where `expression` is trimmed and `value` is a string or string array. The same stable outcome is exposed as native `structuredContent` with an `outputSchema`, so nested/codemode callers receive decimal strings without reparsing display text. Evaluation failures still throw and become native error results; schema and policy checks remain Pi-owned. Pi's tool card displays the safely escaped expression above the result.
+Invalid expressions, nonfinite results and nested result arrays produce errors. If any result in an array is invalid, the whole expression fails. Expressions have a 4,096-character limit, plus [nesting, output and work limits](docs/reference.md#limits).
 
-Expressions are limited to 4,096 characters and 128 nesting levels. Serialized expression/value details must fit within 50 KiB; oversized results are rejected rather than truncated. The tool requests native strict JSON-schema sampling where the provider supports it and uses Pi's normal fallback elsewhere.
+For extensions that call the tool, the [result format](docs/reference.md#result-format) describes its structured output.
 
-Each expression has a shared 1,000-step factorial budget. `sin`/`cos`/`tan` reject absolute inputs above `1e100`, hyperbolic functions reject absolute inputs above 10,000, and `%` rejects operand exponent gaps above 10,000. Expensive operations share a 10,000-unit work budget. Circular trig calls cost 100 units each, allowing at most 100 per expression.
+<a id="upgrading-from-v2"></a>
 
-### Upgrading from v2
-
-Version 3 removes the old angle-conversion names: replace `deg(x)` with `radians(x)` and `rad(x)` with `degrees(x)`. There are no compatibility aliases. Tool content no longer includes `expression =`; consumers should read the expression from details and handle both string and string-array values.
+Upgrading from v2? The [migration notes](docs/reference.md#upgrading-from-v2) explain the renamed angle helpers and changed output format.
 
 ## Verification
 
-```sh
-npm ci --ignore-scripts
-npm run verify
-```
+To work on the calculator, start with the [development guide](docs/development.md): local checks, Pi compatibility testing and the release process. Release history is in the [changelog](CHANGELOG.md).
 
-Verification includes numerical and work-limit checks, schema and structured result contracts, actual extension loading, native nested validation/policy/evaluation errors, and native tool-card rendering. The exact development cohort uses TypeBox 1.3.27; no evaluator or grammar compatibility layer is needed.
+## License
 
-Update the development TypeBox pin alongside the qualified Pi host, using the version that host ships. Independent TypeBox updates are disabled in Renovate because they install duplicate host schema libraries and slow development startup. Each compatibility lane still selects its host's TypeBox version.
-
-The locked development cohort is reproducible local tooling, not a release-qualification target. CI runs the full verification against both frozen latest hosts, including fresh Git and packed npm consumers. Intentional version bumps with versioned changelog notes publish from the main-only repository pipeline when `NPM_RELEASE_ENABLED` is `true`; the release caller reuses the same frozen host inputs for qualification and publishing.
-
-Pi extensions execute with full system access. Review the source before installing.
+[MIT](LICENSE) © Mitchell Fultz. Evaluation uses [decimal.js](https://github.com/MikeMcl/decimal.js) and [expr-eval-fork](https://github.com/jorenbroekema/expr-eval).
