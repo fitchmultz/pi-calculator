@@ -1,35 +1,35 @@
 # pi-calculator
 
-A calculator tool for [Pi](https://github.com/earendil-works/pi) that evaluates expressions with 40-significant-digit decimal precision. Ask Pi to check your math; it shows the expression and result in a tool card.
+pi-calculator adds a calculator tool to [Pi](https://github.com/earendil-works/pi), with 40 significant digits of decimal precision. Use it to check totals or evaluate scientific expressions.
 
 ![Pi sends an expression to the calculator, which returns a decimal result or rejects an invalid expression.](.github/readme/calculator-flow.png)
 
-*Ask Pi for a calculation → the calculator evaluates it → Pi receives the result or an error.*
+*Pi sends an expression to the calculator tool and receives a result or an error.*
 
 ## Install and try it
 
-You'll need Node.js 24+ and Pi 1.0.0+.
+Use Node.js 24 or later and Pi 1.0.0 or later.
 
 ```sh
 pi install npm:@fitchmultz/pi-calculator
 pi
 ```
 
-In the new Pi session, try:
+Enter this prompt in the new Pi session:
 
 ```text
 Use the calculator to evaluate [0.1 + 0.2, 2^64].
 ```
 
-You'll see `["0.3","18446744073709551616"]` as the calculator's result. Pi calls the `calculator` tool with an `expression` string.
+The calculator tool returns `["0.3","18446744073709551616"]`.
 
-For Git installs or switching an existing install to npm, see [installation options](docs/reference.md#installation-options).
+See [installation options](docs/reference.md#installation-options) for Git installs or a change from Git to npm.
 
-Pi extensions run with full system access. Review the source before installing.
+Pi extensions run with full system access. Review the source before you install the package.
 
 ## Expressions
 
-Some expressions it understands:
+Try these expressions:
 
 ```text
 percent(15, 200)                 → 30
@@ -42,27 +42,29 @@ sum([1e40,1,-1e40])              → 1
 
 Arithmetic supports `+`, `-`, `*`, `/`, `%`, `^` and `**`, with `PI` and `E` as constants. Put independent calculations in one flat array, as in the first example.
 
-Trig uses radians. If your angle is in degrees, wrap it in `radians()` as shown above; `degrees()` converts back.
+Trig uses radians. Use `radians()` to convert degrees to radians. Use `degrees()` to convert radians to degrees.
 
-`roundTo(value, places)` rounds halves away from zero. Negative places round to tens, hundreds and so on.
+`roundTo(value, places)` rounds half values away from zero. Use negative places to round to tens, hundreds or larger units.
 
-The [expression reference](docs/reference.md#expressions) has the full function list, including statistics and array indexing.
+See the [expression reference](docs/reference.md#expressions) for all functions and array indexing.
 
 ## Results and limits
 
-Results are decimal strings, or a flat array of decimal strings. Numbers and arithmetic are rounded to 40 significant digits using half-up rounding. Large finite results use scientific notation.
+Results are decimal strings, or a flat array of decimal strings. Input numbers and arithmetic use half-up rounding. Large finite results use scientific notation.
 
-Invalid expressions, nonfinite results and nested result arrays produce errors. If any result in an array is invalid, the whole expression fails. Expressions have a 4,096-character limit, plus [nesting, output and work limits](docs/reference.md#limits).
+The calculator tool rejects invalid expressions, nonfinite results and nested result arrays. If one result in an array is invalid, the calculator tool rejects the whole expression.
 
-For extensions that call the tool, the [result format](docs/reference.md#result-format) describes its structured output.
+Keep expressions within 4,096 characters. See [limits](docs/reference.md#limits) for nesting, output size and work budgets.
+
+See [result format](docs/reference.md#result-format) to use the calculator tool from another extension.
 
 <a id="upgrading-from-v2"></a>
 
-Upgrading from v2? The [migration notes](docs/reference.md#upgrading-from-v2) explain the renamed angle helpers and changed output format.
+Read the [migration notes](docs/reference.md#upgrading-from-v2) before you upgrade from v2.
 
 ## Verification
 
-To work on the calculator, start with the [development guide](docs/development.md): local checks, Pi compatibility testing and the release process. Release history is in the [changelog](CHANGELOG.md).
+See the [development guide](docs/development.md) for local checks and Pi compatibility tests. See the [changelog](CHANGELOG.md) for release history.
 
 ## License
 
