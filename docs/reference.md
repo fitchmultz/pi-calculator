@@ -14,8 +14,6 @@ Git installation is also supported:
 
 ```sh
 pi install git:github.com/fitchmultz/pi-calculator
-# Existing versioned tags remain installable:
-pi install git:github.com/fitchmultz/pi-calculator@v4.1.0
 ```
 
 When switching from Git to npm, run `pi list`, remove the exact Git source it shows with `pi remove <source>`, then install the scoped npm package. This avoids loading the calculator twice. Existing Git installs can stay on Git.
