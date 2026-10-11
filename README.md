@@ -4,8 +4,6 @@ pi-calculator adds a calculator tool to [Pi](https://github.com/earendil-works/p
 
 ![Pi sends an expression to the calculator, which returns a decimal result or rejects an invalid expression.](.github/readme/calculator-flow.png)
 
-*Pi sends an expression to the calculator tool and receives a result or an error.*
-
 ## Install and try it
 
 Use Node.js 24 or later and Pi 1.0.0 or later.
