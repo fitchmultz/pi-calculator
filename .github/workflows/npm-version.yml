@@ -33,9 +33,11 @@ jobs:
       (github.event_name != 'check_run' ||
         github.event.check_run.app.slug == 'pi-durable' || github.event.check_run.app.slug == 'cursor') &&
       (github.event_name != 'issue_comment' || github.event.issue.pull_request != null)
-    uses: fitchmultz/.github/.github/workflows/npm-release-bump.yml@7abe40c5ce7add29b53e07efd9c4b95cd5713487 # main
+    uses: fitchmultz/.github/.github/workflows/npm-release-bump.yml@1d0ea18ce141ceee410030075120c910a7212a1b # main
     with:
-      automation-ref: 7abe40c5ce7add29b53e07efd9c4b95cd5713487 # main
+      automation-ref: 1d0ea18ce141ceee410030075120c910a7212a1b # main
       app-client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
     secrets:
       RELEASE_APP_PRIVATE_KEY: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+      PI_DURABLE_ACCESS_TOKEN: ${{ secrets.PI_DURABLE_ACCESS_TOKEN }}
+      CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
