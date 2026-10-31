@@ -1,5 +1,18 @@
 # Changelog
 
+## 4.1.4 - 2026-10-31
+
+<!-- npm-release:unreleased:start -->
+<!-- npm-release:unreleased:end -->
+
+- Enable reviewed npm version remediation (#44) ([20c90cf](https://github.com/fitchmultz/pi-calculator/commit/20c90cfb5e28452cfa3f7bf2d7923659b6b18a86))
+
+### What's Changed
+* Enable reviewed npm version remediation by @fitchmultz in https://github.com/fitchmultz/pi-calculator/pull/44
+
+
+**Full Changelog**: https://github.com/fitchmultz/pi-calculator/compare/v4.1.3...v4.1.4
+
 ## 4.1.3 - 2026-10-31
 
 <!-- npm-release:unreleased:start -->
