@@ -74,6 +74,8 @@ Evaluation failures throw and become native error results. Schema and policy che
 - Modulo: `%` rejects operand exponent gaps above 10,000.
 - Expensive operations: share a 10,000-unit work budget. Circular trig and `atan2` calls cost 100 units each, allowing at most 100 per expression when no other operation uses that budget.
 
+<a id="migration"></a>
+
 ## Upgrading from v2
 
 Version 3 removed the old angle-conversion names: replace `deg(x)` with `radians(x)` and `rad(x)` with `degrees(x)`. There are no compatibility aliases.

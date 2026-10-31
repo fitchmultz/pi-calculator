@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.1.2 - 2026-10-31
+
+- Refresh installation and reference documentation while preserving unpinned npm and Git sources and migration guidance.
+- Refresh the development lockfile and compatibility workflow references.
+
 ## 4.1.1 - 2026-10-04
 
 - Publish the existing calculator as the public scoped package `@fitchmultz/pi-calculator`, continuing the 4.1.x version line. The unrelated unscoped npm package is not this project.
