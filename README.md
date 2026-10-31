@@ -6,7 +6,7 @@ pi-calculator adds a calculator tool to [Pi](https://github.com/earendil-works/p
 
 ## Install and try it
 
-Use Node.js 24 or later and Pi 1.0.0 or later.
+Use Node.js and a supported Pi release. See the [compatibility requirements](https://github.com/fitchmultz/pi-calculator/blob/main/docs/reference.md#installation-options).
 
 ```sh
 pi install npm:@fitchmultz/pi-calculator
@@ -56,9 +56,7 @@ Keep expressions within 4,096 characters. See [limits](docs/reference.md#limits)
 
 See [result format](docs/reference.md#result-format) to use the calculator tool from another extension.
 
-<a id="upgrading-from-v2"></a>
-
-Read the [migration notes](docs/reference.md#upgrading-from-v2) before you upgrade from v2.
+Read the [migration notes](https://github.com/fitchmultz/pi-calculator/blob/main/docs/reference.md#migration) before upgrading.
 
 ## Verification
 
