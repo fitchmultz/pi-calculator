@@ -25,4 +25,4 @@ Each host is qualified separately; a matching version string alone does not esta
 
 ## Release process
 
-Intentional version bumps with versioned changelog notes publish from the main-only repository pipeline when `NPM_RELEASE_ENABLED` is `true`. The release caller reuses the same frozen host inputs for qualification and publishing. See the [release workflow](../.github/workflows/npm-release.yml) and [changelog](../CHANGELOG.md).
+The main-only repository pipeline publishes matching npm and GitHub releases when `NPM_RELEASE_ENABLED` is `true`. The release caller reuses the same frozen host inputs for qualification and publishing. See the [release workflow](../.github/workflows/npm-release.yml) and [changelog](../CHANGELOG.md).
