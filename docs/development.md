@@ -25,4 +25,4 @@ Each host is qualified separately; a matching version string alone does not esta
 
 ## Release process
 
-The main-only repository pipeline publishes matching npm and GitHub releases when `NPM_RELEASE_ENABLED` is `true`. The release caller reuses the same frozen host inputs for qualification and publishing. See the [release workflow](../.github/workflows/npm-release.yml) and [changelog](../CHANGELOG.md).
+When `NPM_RELEASE_ENABLED` is `true`, each main merge enters the automatic version queue. Its version PR must pass current-head compatibility and reviews before the main-only pipeline publishes matching npm and GitHub releases. The release caller reuses the same frozen host inputs for qualification and publishing. See the [version workflow](../.github/workflows/npm-version.yml), [release workflow](../.github/workflows/npm-release.yml), and [changelog](../CHANGELOG.md).
