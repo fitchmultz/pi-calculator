@@ -10,38 +10,18 @@
 
 ## Quality policy and enforcement
 
-Formatting and linting follow the committed quality policy baseline. Configuration is the
-generated baseline in [`lint-baseline.json`](lint-baseline.json), regenerated from
-[`alto-oxlint/POLICY.md`](alto-oxlint/POLICY.md); edit the policy document and regenerate,
-never the generated file by hand. Current state: oxlint with six plugins and one override
-profile per source class, oxfmt with default options, and the pinned versions recorded in
-`package.json` dev dependencies.
+Lint and formatting follow the adopted standard in
+[`alto-oxlint/POLICY.md`](alto-oxlint/POLICY.md) (version 5.1.1, SHA-256
+`e5fcdfadd6ee7c7cbef837427b65b7899f3a6470ea4976b5ec0d5628ad5f8534`).
+[`alto-oxlint/ADOPTION.md`](alto-oxlint/ADOPTION.md) records the adopted configuration, the
+owners for every maintained file, and the verification result.
 
-- `npm run verify` is the acceptance command. It composes `npm run check:quality` (lint,
-  format check, both compiler projects, baseline drift, policy verifier) and then the test,
-  behaviour, and extension-load checks. `npm run lint` runs the two composed passes: the
-  semantic pass over the tree, then compiler diagnostics over the files a compiler project
-  owns. `npm run lint:fix` is a writer and is never an acceptance gate.
-- `scripts/policy.ts` verifies the checked-in configuration against the committed baseline:
-  it compares plugins, categories, options, and rule settings exactly, permits only the
-  recorded test-profile mappings (`**/check.ts`, `**/check-extension.ts`), rejects warn
-  severities, nonempty allowance lists, added rules, and drift from the policy document's
-  recorded digest, and reports which profile, lint scope, compiler project, and formatter
-  own every maintained file. `scripts/scope-override.ts` owns the generated scope override:
-  maintained sources that no compiler project covers keep syntactic checks only, and the
-  override is regenerated whole from the baseline.
-- Suppressions are not permitted in ordinary sources; the single exception is a described
-  `@ts-expect-error` in a `*.test-d.ts` negative type test, which is how the handwritten
-  `expr-eval-fork.d.ts` augmentation stays checked.
-- `test/policy.test.ts`, `test/scope.test.ts`, and `test/acceptance.test.ts` are the
-  committed harness: each protection is probed with a failing fixture and a valid passing
-  counterpart, asserting diagnostic identifiers and locations for lint and compiler probes
-  and the failed gate plus exit status for the rest. Probes whose toolchain cannot run on
-  the host report an explicit skip rather than passing quietly.
-- Governance reconciliation: every category mechanism the policy defines is enforced by the
-  configuration named above. Two toolchain behaviours are recorded rather than worked around:
-  oxlint applies type-aware rules to maintained sources that sit outside every compiler
-  project, which is why those files carry the generated override; and an override matches on
-  globs only, so the permitted mappings use `**/`-prefixed paths instead of bare filenames.
-- Policy document: version 4.5, release id `strict-quality-4.5`, SHA-256
-  `35f61b737646d1e7d796bcefde921fa6bd44b93f3ed7b242dd56c4251298ce77`.
+- Acceptance is `npm run verify`. It runs each gate independently and aggregates the results,
+  so one failure cannot hide another.
+- `.oxlintrc.json` and `lint-baseline.json` are generated from the adopted standard, and the
+  generated scope override is rewritten by `node scripts/lint.mjs scope --write`. Change the
+  standard and regenerate; do not edit generated files by hand.
+- Suppressions are not used in ordinary source. A deviation from the standard needs a quality
+  exception recorded in `alto-oxlint/ADOPTION.md` with the evidence the standard asks for.
+- `tsgolint` and `tsc` have no `android-arm64` build, so the type-aware lint pass and the
+  compiler projects run on a host that has them, including `npm run check:compat` in CI.
