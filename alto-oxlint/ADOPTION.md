@@ -10,7 +10,7 @@ their normal locations.
 | ------------ | ------------------------------------------------------------------ |
 | Repository   | `fitchmultz/pi-calculator` (`@fitchmultz/pi-calculator`)           |
 | Version      | 5.1.1                                                              |
-| SHA-256      | `e5fcdfadd6ee7c7cbef837427b65b7899f3a6470ea4976b5ec0d5628ad5f8534` |
+| SHA-256      | `41b6d505b36007218ca56b7b3443fcbd96d994715da5a83aaca52b58af47d3d6` |
 | Adopted copy | `alto-oxlint/POLICY.md` (formatted by the project formatter)       |
 
 ## Runtimes, tools, and package manager
