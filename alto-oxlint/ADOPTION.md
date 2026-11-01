@@ -9,8 +9,8 @@ their normal locations.
 | Field        | Value                                                              |
 | ------------ | ------------------------------------------------------------------ |
 | Repository   | `fitchmultz/pi-calculator` (`@fitchmultz/pi-calculator`)           |
-| Version      | 5.1.1                                                              |
-| SHA-256      | `e5fcdfadd6ee7c7cbef837427b65b7899f3a6470ea4976b5ec0d5628ad5f8534` |
+| Version      | 5.1.2                                                              |
+| SHA-256      | `41b6d505b36007218ca56b7b3443fcbd96d994715da5a83aaca52b58af47d3d6` |
 | Adopted copy | `alto-oxlint/POLICY.md` (formatted by the project formatter)       |
 
 ## Runtimes, tools, and package manager
@@ -23,6 +23,11 @@ their normal locations.
 | oxfmt           | 0.75.0                                                      |
 | oxlint-tsgolint | 7.0.2005                                                    |
 | TypeScript      | 7.0.2                                                       |
+
+The standard prescribes no package version numbers; it asks for the current stable releases,
+resolved reproducibly. The versions above are the current stable releases on the registry as of
+this adoption, so nothing here is a lagging pin. Renovate owns keeping them current, and the
+lockfile records the resolution for reproducibility without slowing updates.
 
 ## Configuration and acceptance paths
 
@@ -71,6 +76,9 @@ negative type test profile's defined allowance, not an exception.
 
 ## Integrated verification
 
-| Revision                                                                                             | Where                        | Result |
-| ---------------------------------------------------------------------------------------------------- | ---------------------------- | ------ |
-| recorded by `node scripts/policy.ts` and the acceptance run at the head of the adopting pull request | host with the full toolchain | pass   |
+| Revision                                                       | Scope                                                                                                 | Host            | Result                                         |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | --------------- | ---------------------------------------------- |
+| `f5fe15e` (PR #48, standard v5.1.1)                            | full aggregate: lint, format:check, both compiler projects, baseline, policy, tests, behaviour checks | `mitchs-m5-mbp` | pass, exit 0                                   |
+| `f5fe15e` (PR #48, standard v5.1.1)                            | hosted: resolve, compatibility (runs `check:compat`), Cursor, Pi Durable                              | GitHub          | pass                                           |
+| `fdf7bb0`/`3ec5391`/`dbc722f` (this adoption, standard v5.1.2) | full aggregate: the same nine gates                                                                   | `m1-mbp`        | pass, exit 0                                   |
+| `fdf7bb0` (this adoption, standard v5.1.2)                     | hosted CI                                                                                             | GitHub          | recorded on the pull request when it completes |

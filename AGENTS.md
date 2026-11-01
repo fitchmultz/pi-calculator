@@ -11,8 +11,8 @@
 ## Quality policy and enforcement
 
 Lint and formatting follow the adopted standard in
-[`alto-oxlint/POLICY.md`](alto-oxlint/POLICY.md) (version 5.1.1, SHA-256
-`e5fcdfadd6ee7c7cbef837427b65b7899f3a6470ea4976b5ec0d5628ad5f8534`).
+[`alto-oxlint/POLICY.md`](alto-oxlint/POLICY.md) (version 5.1.2, SHA-256
+`41b6d505b36007218ca56b7b3443fcbd96d994715da5a83aaca52b58af47d3d6`).
 [`alto-oxlint/ADOPTION.md`](alto-oxlint/ADOPTION.md) records the adopted configuration, the
 owners for every maintained file, and the verification result.
 
