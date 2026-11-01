@@ -101,6 +101,7 @@ await test(
 				toolchain: true,
 			},
 		];
+		let nestedContext: string | undefined;
 		try {
 			for (const testCase of cases) {
 				if (
@@ -136,9 +137,16 @@ await test(
 				}
 				if (testCase.nested === true) {
 					process.env.ACCEPTANCE_CHILD = "1";
+					nestedContext = process.env.NODE_TEST_CONTEXT;
+					// Node marks a test process with NODE_TEST_CONTEXT and a child runner left
+					// inside that context runs the files as plain scripts and collects nothing.
+					delete process.env.NODE_TEST_CONTEXT;
 				}
 				const result = quality(testCase.gate);
 				delete process.env.ACCEPTANCE_CHILD;
+				if (testCase.nested === true) {
+					process.env.NODE_TEST_CONTEXT = nestedContext;
+				}
 				assert.notEqual(
 					result.status,
 					0,
