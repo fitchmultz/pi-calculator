@@ -43,12 +43,12 @@
 		"format:check": "oxfmt --check .",
 		"policy": "node scripts/policy.ts",
 		"test": "node --test \"test/**/*.test.ts\"",
-		"verify": "npm run check:quality && npm run test && npm run check && npm run check:load",
+		"verify": "node scripts/checks.mjs lint format:check typecheck typecheck:declarations lint:baseline policy test check check:load",
 		"check:compat": "npm run verify",
 		"lint:baseline": "node scripts/lint-baseline.ts",
 		"lint:scope": "node scripts/lint.mjs scope",
 		"format:write": "oxfmt --write .",
-		"check:quality": "npm run lint && npm run format:check && npm run typecheck && npm run typecheck:declarations && npm run lint:baseline && npm run policy"
+		"check:quality": "node scripts/checks.mjs lint format:check typecheck typecheck:declarations lint:baseline policy"
 	},
 	"pi": {
 		"extensions": [

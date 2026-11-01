@@ -313,6 +313,25 @@ await test("suppression scanning distinguishes directives from strings", () => {
 	}
 });
 
+await test("a rule that only a category enables still fires in the composed configuration", () => {
+	const scope = project();
+	try {
+		if (!toolchainRuns(scope.dir, false)) {
+			console.log(
+				"SKIP category coverage: the composed configuration needs type-aware lint on this host",
+			);
+			return;
+		}
+		// `no-unused-vars` is not in the explicit rule list; it arrives through the categories.
+		scope.write("test/probe.ts", "const unused = 1;\nexport const used = 2;\n");
+		rejectsWith(scope.dir, "test/probe.ts", ["eslint(no-unused-vars)@test/probe.ts:1"], false);
+		scope.write("test/probe.ts", "export const used = 1;\n");
+		accepts(scope.dir, "test/probe.ts", false);
+	} finally {
+		scope.cleanup();
+	}
+});
+
 await test("configuration integrity fails on downgrades, allowances, and unmapped profiles", () => {
 	const scope = project();
 	try {

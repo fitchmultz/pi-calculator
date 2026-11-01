@@ -23,7 +23,12 @@ function option(name: string): string | undefined {
 	return index === -1 ? undefined : args[index + 1];
 }
 
-/** A bolded "**Label:** value" line from the policy header. */
+/** The version line the standard opens with, or a bolded "**Label:** value" header field. */
+function version(): string | undefined {
+	const header = /^# .*?\n+\*\*Version ([0-9][^\s]*) ·/m.exec(policyText);
+	return header?.[1];
+}
+
 function field(label: string): string | undefined {
 	const pattern = new RegExp(`^\\*\\*${label}:\\*\\*\\s*(.+)$`, "m");
 	return pattern.exec(policyText)?.[1]?.trim();
@@ -31,7 +36,7 @@ function field(label: string): string | undefined {
 
 /** The single fenced JSON block under the policy's baseline section. */
 function baselineFrom(text: string): unknown {
-	const section = text.slice(text.indexOf("\n## 4."));
+	const section = text.slice(text.indexOf("\n## Appendix A"));
 	const body = /^```json\n([\s\S]*?)^```$/m.exec(section)?.[1];
 	if (body === undefined) {
 		throw new Error(`no JSON baseline block found in ${policyPath}`);
@@ -59,8 +64,8 @@ const document: {
 } = {
 	policy: {
 		path: relative(root, policyPath),
-		version: field("Version"),
-		releaseId: field("Release ID"),
+		version: version(),
+		releaseId: field("Release ID") ?? version(),
 		digest: createHash("sha256").update(policyText).digest("hex"),
 	},
 	baseline: baselineFrom(policyText),

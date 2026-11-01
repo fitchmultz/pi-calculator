@@ -25,6 +25,7 @@ export const COPIED = [
 	"package.json",
 	"expr-eval-fork.d.ts",
 	"test/expr-eval-fork.test-d.ts",
+	"scripts/checks.mjs",
 	"scripts/lint.mjs",
 	"scripts/lint-scope.ts",
 	"scripts/scope-override.ts",

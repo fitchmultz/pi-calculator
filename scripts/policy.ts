@@ -239,11 +239,15 @@ function checkGeneratedOverride(expected: {
 
 function uncoveredSources(): string[] {
 	const uncovered = new Set<string>();
-	for (const directory of [".", "test", "scripts"]) {
-		for (const file of maintainedFiles(directory)) {
-			if (compilerFor(file) === "none" && !file.endsWith(".d.ts")) {
-				uncovered.add(file);
-			}
+	// Only lint-scoped source participates in the generated override. Documentation and data
+	// files keep a formatter owner and no compiler project, which is their correct coverage.
+	for (const file of maintainedFiles(".")) {
+		if (
+			/\.[cm]?[jt]sx?$/.test(file) &&
+			!file.endsWith(".d.ts") &&
+			compilerFor(file) === "none"
+		) {
+			uncovered.add(file);
 		}
 	}
 	return [...uncovered];
@@ -380,14 +384,14 @@ function maintainedFiles(directory: string): string[] {
 		const path = join(root, directory, entry);
 		if (statSync(path).isDirectory()) {
 			found.push(...maintainedFiles(join(directory, entry)));
-		} else if (/\.[cm]?[jt]sx?$/.test(entry)) {
+		} else if (/\.[cm]?[jt]sx?$/.test(entry) || /\.(md|json|ya?ml)$/.test(entry)) {
 			found.push(relative(root, path).split(sep).join("/"));
 		}
 	}
 	return found.sort();
 }
 
-const MAINTAINED_DIRECTORIES = [".", "test", "scripts"];
+const MAINTAINED_DIRECTORIES = ["."];
 const coverage: string[] = [];
 const scanned = new Set<string>();
 for (const directory of MAINTAINED_DIRECTORIES) {
