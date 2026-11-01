@@ -13,7 +13,7 @@ npm run verify
 
 `verify` runs type checking, numerical and work-limit checks, then an actual Pi extension-load check. It covers schema and structured result contracts, native nested validation/policy/evaluation errors and native tool-card rendering.
 
-The locked development cohort uses Pi 1.0.0 and TypeBox 1.3.27. Pi supplies the schema and terminal UI libraries; `decimal.js` and `expr-eval-fork` are runtime dependencies. No evaluator or grammar compatibility layer is needed.
+The locked development cohort uses Pi 1.4.0 and TypeBox 1.3.27. Pi supplies the schema and terminal UI libraries; `decimal.js` and `expr-eval-fork` are runtime dependencies. No evaluator or grammar compatibility layer is needed.
 
 Update the development TypeBox pin alongside the qualified Pi host, using the version that host ships. Independent TypeBox updates are disabled in Renovate because they install duplicate host schema libraries and slow development startup. Each compatibility lane selects its host's TypeBox version.
 
