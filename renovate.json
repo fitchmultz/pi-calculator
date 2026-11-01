@@ -1,16 +1,16 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>fitchmultz/.github:pi-extensions"],
-  "packageRules": [
-    {
-      "description": "Update TypeBox with the qualified Pi host, avoiding duplicate host schema libraries.",
-      "matchPackageNames": ["typebox"],
-      "enabled": false
-    },
-    {
-      "description": "Node types follow the engines.node floor.",
-      "matchPackageNames": ["@types/node"],
-      "allowedVersions": "<25"
-    }
-  ]
+	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
+	"extends": ["github>fitchmultz/.github:pi-extensions"],
+	"packageRules": [
+		{
+			"description": "Update TypeBox with the qualified Pi host, avoiding duplicate host schema libraries.",
+			"matchPackageNames": ["typebox"],
+			"enabled": false
+		},
+		{
+			"description": "Node types follow the engines.node floor.",
+			"matchPackageNames": ["@types/node"],
+			"allowedVersions": "<25"
+		}
+	]
 }
