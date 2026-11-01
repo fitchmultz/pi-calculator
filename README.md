@@ -2,7 +2,7 @@
 
 pi-calculator adds a calculator tool to [Pi](https://github.com/earendil-works/pi), with 40 significant digits of decimal precision. Use it to check totals or evaluate scientific expressions.
 
-![Pi sends an expression to the calculator, which returns a decimal result or rejects an invalid expression.](.github/readme/calculator-flow.png)
+![Pi sends an expression to the calculator, which returns a decimal result or rejects an invalid expression.](https://raw.githubusercontent.com/fitchmultz/pi-calculator/main/.github/readme/calculator-flow.png)
 
 ## Install and try it
 
@@ -56,7 +56,7 @@ Keep expressions within 4,096 characters. See [limits](docs/reference.md#limits)
 
 See [result format](docs/reference.md#result-format) to use the calculator tool from another extension.
 
-Read the [migration notes](https://github.com/fitchmultz/pi-calculator/blob/main/docs/reference.md#migration) before upgrading.
+Read the [migration notes](https://github.com/fitchmultz/pi-calculator/blob/main/docs/reference.md#upgrading-from-v2) before upgrading.
 
 ## Verification
 

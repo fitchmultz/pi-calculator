@@ -13,26 +13,38 @@ const calculatorTool = defineTool({
 		"Use calculator for non-trivial calculations; simple arithmetic does not need a tool call. Results are rounded decimal strings. In calculator expressions, use sum([...]) for totals and roundTo(value, places) for requested rounding. Put independent results in a flat array.",
 	],
 	constrainedSampling: { type: "json_schema", strict: "prefer" },
+	annotations: { readOnlyHint: true, idempotentHint: true },
 	parameters: Type.Object(
 		{
 			expression: Type.String({
 				minLength: 1,
 				maxLength: MAX_EXPRESSION_LENGTH,
-				description: "Numeric expression: + - * / % ^ **, PI, E, roots, trig, n! (0–1000), sum/mean/median. log/ln are natural; log2/log10 choose a base. Use expm1(x) for exp(x)-1 and log1p(x) for ln(1+x) when x is small. Trig uses radians; radians(degrees) and degrees(radians) convert angles. percent(rate, amount) gives rate% of amount. stdev(array) is population; stdevs(array) is sample. roundTo(value, places) rounds halves away from zero.",
+				description:
+					"Numeric expression: + - * / % ^ **, PI, E, roots, trig, n! (0–1000), sum/mean/median. log/ln are natural; log2/log10 choose a base. Use expm1(x) for exp(x)-1 and log1p(x) for ln(1+x) when x is small. Trig uses radians; radians(degrees) and degrees(radians) convert angles. percent(rate, amount) gives rate% of amount. stdev(array) is population; stdevs(array) is sample. roundTo(value, places) rounds halves away from zero.",
 			}),
 		},
 		{ additionalProperties: false },
 	),
-	outputSchema: Type.Object({
-		expression: Type.String(),
-		value: Type.Union([Type.String(), Type.Array(Type.String())]),
-	}, { additionalProperties: false }),
-	renderCall(args, theme) {
-		return new Text(theme.fg("toolTitle", theme.bold("calculator ")) + theme.fg("dim", JSON.stringify(args.expression ?? "")), 0, 0);
+	outputSchema: Type.Object(
+		{
+			expression: Type.String(),
+			value: Type.Union([Type.String(), Type.Array(Type.String())]),
+		},
+		{ additionalProperties: false },
+	),
+	renderCall(args: { readonly expression?: string }, theme) {
+		return new Text(
+			theme.fg("toolTitle", theme.bold("calculator ")) +
+				theme.fg("dim", JSON.stringify(args.expression ?? "")),
+			0,
+			0,
+		);
 	},
 	async execute(_toolCallId, params) {
 		const evaluated = evaluateExpression(params.expression);
-		const text = Array.isArray(evaluated.value) ? JSON.stringify(evaluated.value) : evaluated.value;
+		const text = Array.isArray(evaluated.value)
+			? JSON.stringify(evaluated.value)
+			: evaluated.value;
 		return {
 			content: [{ type: "text", text }],
 			details: evaluated,
@@ -41,6 +53,6 @@ const calculatorTool = defineTool({
 	},
 });
 
-export default function (pi: ExtensionAPI) {
+export default function (pi: ExtensionAPI): void {
 	pi.registerTool(calculatorTool);
 }

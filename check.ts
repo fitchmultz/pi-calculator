@@ -1,12 +1,19 @@
 import { deepStrictEqual } from "node:assert";
 import { execFileSync } from "node:child_process";
 import { Decimal as DecimalBase } from "decimal.js";
-import { DECIMAL_PRECISION, Decimal as CalculatorDecimal, MAX_EXPRESSION_DEPTH } from "./decimal.ts";
+import {
+	DECIMAL_PRECISION,
+	Decimal as CalculatorDecimal,
+	MAX_EXPRESSION_DEPTH,
+} from "./decimal.ts";
 import { evaluateExpression } from "./eval.ts";
 
 const cases: Array<[string, string | string[]]> = [
 	["[0.1 + 0.2, 2^64, 1e1000]", ["0.3", "18446744073709551616", "1e+1000"]],
-	["[stdev([2,4,4,4,5,5,7,9]), stdevs([2,4,4,4,5,5,7,9])]", ["2", "2.138089935299395077476427847038028172432"]],
+	[
+		"[stdev([2,4,4,4,5,5,7,9]), stdevs([2,4,4,4,5,5,7,9])]",
+		["2", "2.138089935299395077476427847038028172432"],
+	],
 	["[]", []],
 	["2 + 2", "4"],
 	["0.1 + 0.2", "0.3"],
@@ -76,7 +83,10 @@ const cases: Array<[string, string | string[]]> = [
 	["stdevs([9e9000000000000000,0,-9e9000000000000000])", "9e+9000000000000000"],
 	["stdevs([0,9e9000000000000000,-9e9000000000000000])", "9e+9000000000000000"],
 	["stdev([-9e9000000000000000,9e9000000000000000])", "9e+9000000000000000"],
-	["stdevs([9e9000000000000000,9e9000000000000000,9e9000000000000000,-9e9000000000000000])", "9e+9000000000000000"],
+	[
+		"stdevs([9e9000000000000000,9e9000000000000000,9e9000000000000000,-9e9000000000000000])",
+		"9e+9000000000000000",
+	],
 	["stdev([1e39,1e39+1])", "0.5"],
 	["stdevs([1e39,1e39+1])", "0.7071067811865475244008443621048490392848"],
 	["sum([1e40,1,-1e40])", "1"],
@@ -91,7 +101,10 @@ const cases: Array<[string, string | string[]]> = [
 	["mean([3,1.5e-39,-1e-100])", "1"],
 	["sum([9e9000000000000000,9e9000000000000000,-9e9000000000000000])", "9e+9000000000000000"],
 	["mean([9e9000000000000000,9e9000000000000000])", "9e+9000000000000000"],
-	[`sum([${Array(10).fill("1.1e-9000000000000000,-1e-9000000000000000").join(",")}])`, "1e-9000000000000000"],
+	[
+		`sum([${Array(10).fill("1.1e-9000000000000000,-1e-9000000000000000").join(",")}])`,
+		"1e-9000000000000000",
+	],
 ];
 
 for (const [expression, expected] of cases) {
@@ -100,12 +113,19 @@ for (const [expression, expected] of cases) {
 }
 
 // Keep a regression in a timed process: the old atan implementation loops forever.
-const extremeAtan = "[atan(1e4500000000000001),atan(-1e4500000000000001),atan(1e-9000000000000000),atan2(1e4500000000000001,-1),atan2(1e-9000000000000000,1),atan2(1e-9000000000000000,-1),atan2(-1e-9000000000000000,-1),atan2(1,1e9000000000000000)]";
-const output = execFileSync(process.execPath, [
-	"--input-type=module", "-e",
-	`import { evaluateExpression } from ${JSON.stringify(new URL("./eval.ts", import.meta.url).href)}; console.log(JSON.stringify(evaluateExpression(${JSON.stringify(extremeAtan)}).value));`,
-], { encoding: "utf8", timeout: 2_000 });
-deepStrictEqual(JSON.parse(output), [
+const extremeAtan =
+	"[atan(1e4500000000000001),atan(-1e4500000000000001),atan(1e-9000000000000000),atan2(1e4500000000000001,-1),atan2(1e-9000000000000000,1),atan2(1e-9000000000000000,-1),atan2(-1e-9000000000000000,-1),atan2(1,1e9000000000000000)]";
+const output = execFileSync(
+	process.execPath,
+	[
+		"--input-type=module",
+		"-e",
+		`import { evaluateExpression } from ${JSON.stringify(new URL("./eval.ts", import.meta.url).href)}; console.log(JSON.stringify(evaluateExpression(${JSON.stringify(extremeAtan)}).value));`,
+	],
+	{ encoding: "utf8", timeout: 2_000 },
+);
+const parsedOutput: unknown = JSON.parse(output);
+deepStrictEqual(parsedOutput, [
 	"1.570796326794896619231321691639751442099",
 	"-1.570796326794896619231321691639751442099",
 	"1e-9000000000000000",
@@ -120,9 +140,14 @@ function expectFailure(expression: string, expectedMessage?: string): void {
 	try {
 		evaluateExpression(expression);
 	} catch (error) {
-		if (!(error instanceof Error)) throw error;
-		if (expectedMessage && !error.message.includes(expectedMessage)) {
-			throw new Error(`expected "${expectedMessage}" for "${expression.slice(0, 40)}", got "${error.message}"`);
+		if (!(error instanceof Error)) {
+			throw error;
+		}
+		if (expectedMessage !== undefined && !error.message.includes(expectedMessage)) {
+			throw new Error(
+				`expected "${expectedMessage}" for "${expression.slice(0, 40)}", got "${error.message}"`,
+				{ cause: error },
+			);
 		}
 		return;
 	}
@@ -202,16 +227,23 @@ const arrayResult = evaluateExpression(`[${Array(1000).fill("PI").join(",")}]`);
 if (!Array.isArray(arrayResult.value) || arrayResult.value.length !== 1000) {
 	throw new Error("finite array result was truncated");
 }
-if (Buffer.byteLength(JSON.stringify(arrayResult)) > 50 * 1024) throw new Error("array result exceeded 50 KiB");
+if (Buffer.byteLength(JSON.stringify(arrayResult)) > 50 * 1024) {
+	throw new Error("array result exceeded 50 KiB");
+}
 expectFailure(`[${Array(1200).fill("PI").join(",")}]`, "Result exceeds 50 KiB output limit");
 
 const rejectionStarted = performance.now();
 expectFailure("999999999999!", "factorial operand too large");
 expectFailure(`[${Array(1001).fill("0!").join(",")}]`, "factorial work budget exceeded");
 const rejectionMs = performance.now() - rejectionStarted;
-if (rejectionMs > 1000) throw new Error(`factorial rejection took ${rejectionMs.toFixed(0)}ms`);
+if (rejectionMs > 1000) {
+	throw new Error(`factorial rejection took ${rejectionMs.toFixed(0)}ms`);
+}
 
-if (evaluateExpression(`${"(".repeat(MAX_EXPRESSION_DEPTH)}1${")".repeat(MAX_EXPRESSION_DEPTH)}`).value !== "1") {
+if (
+	evaluateExpression(`${"(".repeat(MAX_EXPRESSION_DEPTH)}1${")".repeat(MAX_EXPRESSION_DEPTH)}`)
+		.value !== "1"
+) {
 	throw new Error("expression at the nesting limit failed");
 }
 expectFailure(
@@ -233,7 +265,9 @@ expectFailure("sin(2^400)", "sin() argument too large");
 expectFailure(Array(372).fill("sin(9e972)").join("+"), "sin() argument too large");
 expectFailure(Array(101).fill("sin(1e100)").join("+"), "expression work budget exceeded");
 expectFailure(Array(101).fill("atan2(1, 1)").join("+"), "expression work budget exceeded");
-if (performance.now() - trigRejectionStarted > 1000) throw new Error("large trig rejection exceeded 1 second");
+if (performance.now() - trigRejectionStarted > 1000) {
+	throw new Error("large trig rejection exceeded 1 second");
+}
 if (evaluateExpression("sin(1)").value !== "0.8414709848078965066525023216302989996226") {
 	throw new Error("trig work budget leaked after a failed evaluation");
 }
@@ -267,8 +301,8 @@ try {
 }
 
 const hugeFinite = evaluateExpression("1e1000");
-const roundTripped = JSON.parse(JSON.stringify(hugeFinite)) as typeof hugeFinite;
-if (roundTripped.value !== hugeFinite.value) throw new Error("large finite result did not round-trip safely through JSON");
+const roundTripped: unknown = JSON.parse(JSON.stringify(hugeFinite));
+deepStrictEqual(roundTripped, { expression: "1e1000", value: "1e+1000" });
 
 const largePower = evaluateExpression("2^1000000");
 if (largePower.value.length > 50_000 || !largePower.value.includes("e+")) {
@@ -276,8 +310,12 @@ if (largePower.value.length > 50_000 || !largePower.value.includes("e+")) {
 }
 
 const largeLiteral = evaluateExpression("1".repeat(4000));
-if (largeLiteral.value !== `1.${"1".repeat(39)}e+3999`) throw new Error("large literal was not rounded to 40 digits");
-if (Buffer.byteLength(JSON.stringify(largeLiteral)) > 9000) throw new Error("evaluation details are unexpectedly large");
+if (largeLiteral.value !== `1.${"1".repeat(39)}e+3999`) {
+	throw new Error("large literal was not rounded to 40 digits");
+}
+if (Buffer.byteLength(JSON.stringify(largeLiteral)) > 9000) {
+	throw new Error("evaluation details are unexpectedly large");
+}
 
 const longNines = `0.${"9".repeat(4000)}`;
 const longInputStarted = performance.now();
@@ -287,10 +325,16 @@ if (evaluateExpression(`tanh(${longNines})`).value !== evaluateExpression("tanh(
 if (evaluateExpression(`cbrt(${longNines})`).value !== "1") {
 	throw new Error("long cbrt input was not rounded before evaluation");
 }
-if (performance.now() - longInputStarted > 1000) throw new Error("long numeric inputs exceeded 1 second");
+if (performance.now() - longInputStarted > 1000) {
+	throw new Error("long numeric inputs exceeded 1 second");
+}
 
-if (!evaluateExpression("1000!").value) throw new Error("expected 1000! to remain supported");
+if (evaluateExpression("1000!").value === "") {
+	throw new Error("expected 1000! to remain supported");
+}
 expectFailure("fac(1001)", "factorial operand too large");
-if (evaluateExpression("5!").value !== "120") throw new Error("factorial budget leaked across evaluations");
+if (evaluateExpression("5!").value !== "120") {
+	throw new Error("factorial budget leaked across evaluations");
+}
 
 console.log(`pi-calculator check ok (${cases.length} exact cases)`);

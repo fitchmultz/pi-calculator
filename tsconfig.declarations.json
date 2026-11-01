@@ -1,0 +1,7 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"skipLibCheck": false
+	},
+	"include": ["expr-eval-fork.d.ts", "test/expr-eval-fork.test-d.ts"]
+}

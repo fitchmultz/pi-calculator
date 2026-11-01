@@ -8,8 +8,8 @@
 - Use direct Flash for automatic release remediation (#49) ([544c540](https://github.com/fitchmultz/pi-calculator/commit/544c540e8d12cbe0ec8c6cde7050628f41700a4e))
 
 ### What's Changed
-* Use direct Flash for necessary release remediation by @fitchmultz in https://github.com/fitchmultz/pi-calculator/pull/49
 
+- Use direct Flash for necessary release remediation by @fitchmultz in https://github.com/fitchmultz/pi-calculator/pull/49
 
 **Full Changelog**: https://github.com/fitchmultz/pi-calculator/compare/v4.1.5...v4.1.6
 
@@ -22,8 +22,8 @@
 - Pin reviewed release source binding (#46) ([2a75d8b](https://github.com/fitchmultz/pi-calculator/commit/2a75d8beebdf247c7703d35b8a5944ab7b9cf7cb))
 
 ### What's Changed
-* Bind automatic releases to the reviewed version by @fitchmultz in https://github.com/fitchmultz/pi-calculator/pull/46
 
+- Bind automatic releases to the reviewed version by @fitchmultz in https://github.com/fitchmultz/pi-calculator/pull/46
 
 **Full Changelog**: https://github.com/fitchmultz/pi-calculator/compare/v4.1.4...v4.1.5
 
@@ -35,8 +35,8 @@
 - Enable reviewed npm version remediation (#44) ([20c90cf](https://github.com/fitchmultz/pi-calculator/commit/20c90cfb5e28452cfa3f7bf2d7923659b6b18a86))
 
 ### What's Changed
-* Enable reviewed npm version remediation by @fitchmultz in https://github.com/fitchmultz/pi-calculator/pull/44
 
+- Enable reviewed npm version remediation by @fitchmultz in https://github.com/fitchmultz/pi-calculator/pull/44
 
 **Full Changelog**: https://github.com/fitchmultz/pi-calculator/compare/v4.1.3...v4.1.4
 
@@ -48,8 +48,8 @@
 - Enable reviewed automatic npm releases (#42) ([f7ce653](https://github.com/fitchmultz/pi-calculator/commit/f7ce6539ac13a509750e4960c4ef5182c5530b40))
 
 ### What's Changed
-* Enable reviewed automatic npm releases by @fitchmultz in https://github.com/fitchmultz/pi-calculator/pull/42
 
+- Enable reviewed automatic npm releases by @fitchmultz in https://github.com/fitchmultz/pi-calculator/pull/42
 
 **Full Changelog**: https://github.com/fitchmultz/pi-calculator/compare/v4.1.2...v4.1.3
 

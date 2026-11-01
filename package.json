@@ -1,71 +1,90 @@
 {
-  "name": "@fitchmultz/pi-calculator",
-  "version": "4.1.6",
-  "publishConfig": {
-    "access": "public"
-  },
-  "license": "MIT",
-  "description": "Deterministic high-precision calculator tool for Pi",
-  "type": "module",
-  "files": [
-    "index.ts",
-    "eval.ts",
-    "decimal.ts",
-    "expr-eval-fork.d.ts",
-    "README.md",
-    "CHANGELOG.md",
-    "LICENSE"
-  ],
-  "keywords": [
-    "pi-package",
-    "pi",
-    "calculator",
-    "decimal"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/fitchmultz/pi-calculator.git"
-  },
-  "engines": {
-    "node": ">=24.0.0"
-  },
-  "scripts": {
-    "check": "node check.ts",
-    "check:load": "node check-extension.ts",
-    "typecheck": "tsc",
-    "verify": "npm run typecheck && npm run check && npm run check:load",
-    "check:compat": "npm run verify"
-  },
-  "pi": {
-    "extensions": [
-      "./index.ts"
-    ]
-  },
-  "dependencies": {
-    "decimal.js": "10.6.0",
-    "expr-eval-fork": "3.0.3"
-  },
-  "peerDependencies": {
-    "@earendil-works/pi-coding-agent": "*",
-    "@earendil-works/pi-tui": "*",
-    "typebox": "*"
-  },
-  "peerDependenciesMeta": {
-    "@earendil-works/pi-coding-agent": {
-      "optional": true
-    },
-    "@earendil-works/pi-tui": {
-      "optional": true
-    },
-    "typebox": {
-      "optional": true
-    }
-  },
-  "devDependencies": {
-    "@earendil-works/pi-coding-agent": "1.4.0",
-    "@earendil-works/pi-tui": "1.4.0",
-    "@types/node": "24.19.1",
-    "typebox": "1.3.27",
-    "typescript": "7.0.2"
-  }
+	"name": "@fitchmultz/pi-calculator",
+	"version": "4.1.6",
+	"publishConfig": {
+		"access": "public"
+	},
+	"license": "MIT",
+	"description": "Deterministic high-precision calculator tool for Pi",
+	"type": "module",
+	"files": [
+		"index.ts",
+		"eval.ts",
+		"decimal.ts",
+		"expr-eval-fork.d.ts",
+		"README.md",
+		"CHANGELOG.md",
+		"LICENSE",
+		"statistics.ts",
+		"docs"
+	],
+	"keywords": [
+		"pi-package",
+		"pi",
+		"calculator",
+		"decimal"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/fitchmultz/pi-calculator.git"
+	},
+	"engines": {
+		"node": ">=24.0.0"
+	},
+	"scripts": {
+		"check": "node check.ts",
+		"check:load": "node check-extension.ts",
+		"typecheck": "tsc",
+		"typecheck:declarations": "tsc -p tsconfig.declarations.json",
+		"lint": "node scripts/lint.mjs all",
+		"lint:agent": "node scripts/lint.mjs agent",
+		"lint:fix": "node scripts/lint.mjs fix",
+		"format": "oxfmt --write .",
+		"format:check": "oxfmt --check .",
+		"policy": "node scripts/policy.ts",
+		"test": "node --test \"test/**/*.test.ts\"",
+		"verify": "node scripts/checks.mjs lint format:check typecheck typecheck:declarations lint:baseline policy test check check:load",
+		"check:compat": "npm run verify",
+		"lint:baseline": "node scripts/lint-baseline.ts",
+		"lint:scope": "node scripts/lint.mjs scope",
+		"format:write": "oxfmt --write .",
+		"check:quality": "node scripts/checks.mjs lint format:check typecheck typecheck:declarations lint:baseline policy"
+	},
+	"pi": {
+		"extensions": [
+			"./index.ts"
+		],
+		"image": "https://raw.githubusercontent.com/fitchmultz/pi-calculator/main/.github/readme/calculator-flow.png"
+	},
+	"dependencies": {
+		"decimal.js": "10.6.0",
+		"expr-eval-fork": "3.0.3"
+	},
+	"peerDependencies": {
+		"@earendil-works/pi-coding-agent": "*",
+		"@earendil-works/pi-tui": "*",
+		"typebox": "*"
+	},
+	"peerDependenciesMeta": {
+		"@earendil-works/pi-coding-agent": {
+			"optional": true
+		},
+		"@earendil-works/pi-tui": {
+			"optional": true
+		},
+		"typebox": {
+			"optional": true
+		}
+	},
+	"devDependencies": {
+		"@earendil-works/pi-ai": "^1.4.0",
+		"@earendil-works/pi-coding-agent": "1.4.0",
+		"@earendil-works/pi-tui": "1.4.0",
+		"@types/node": "24.19.1",
+		"oxfmt": "0.75.0",
+		"oxlint": "1.90.0",
+		"oxlint-tsgolint": "7.0.2005",
+		"typebox": "1.3.27",
+		"typescript": "7.0.2"
+	}
 }
