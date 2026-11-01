@@ -1,5 +1,18 @@
 # Changelog
 
+## 4.1.5 - 2026-11-01
+
+<!-- npm-release:unreleased:start -->
+<!-- npm-release:unreleased:end -->
+
+- Pin reviewed release source binding (#46) ([2a75d8b](https://github.com/fitchmultz/pi-calculator/commit/2a75d8beebdf247c7703d35b8a5944ab7b9cf7cb))
+
+### What's Changed
+* Bind automatic releases to the reviewed version by @fitchmultz in https://github.com/fitchmultz/pi-calculator/pull/46
+
+
+**Full Changelog**: https://github.com/fitchmultz/pi-calculator/compare/v4.1.4...v4.1.5
+
 ## 4.1.4 - 2026-10-31
 
 <!-- npm-release:unreleased:start -->
