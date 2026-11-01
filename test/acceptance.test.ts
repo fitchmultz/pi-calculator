@@ -7,11 +7,15 @@ import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { command, compilerRuns, root, toolchainRuns } from "./harness.ts";
 
-const PROBES = ["scripts/acceptance-probe.js", "test/acceptance-probe.ts"];
+const PROBES = [
+	"scripts/acceptance-probe.js",
+	"test/acceptance-probe.ts",
+	"test/acceptance-probe.test.ts",
+];
 const original = readFileSync(join(root, ".oxlintrc.json"), "utf8");
 
-function quality(): ReturnType<typeof command> {
-	return command(root, "npm", ["run", "check:quality"]);
+function quality(gate = "check:quality"): ReturnType<typeof command> {
+	return command(root, "npm", ["run", gate]);
 }
 
 function clean(): void {
@@ -36,6 +40,7 @@ await test(
 			source: string;
 			signal: RegExp;
 			toolchain?: boolean;
+			gate?: string;
 		}[] = [
 			{
 				name: "unchecked JavaScript syntax",
@@ -71,6 +76,14 @@ await test(
 				source: "// oxlint-disable-next-line no-debugger -- explained by the acceptance probe itself.\nexport const value = 1;\n",
 				signal: /acceptance-probe\.ts:1/,
 				toolchain: true,
+			},
+			{
+				name: "test gate",
+				path: "test/acceptance-probe.test.ts",
+				source: 'import assert from "node:assert/strict";\nimport { test } from "node:test";\n\nawait test("the injected assertion fails", () => {\n\tassert.equal(1, 2);\n});\n',
+				signal: /gate test: fail/,
+				toolchain: true,
+				gate: "verify",
 			},
 			{
 				name: "policy downgrade",
@@ -113,7 +126,7 @@ await test(
 						command(root, "node", ["scripts/lint.mjs", "scope", "--write"]);
 					}
 				}
-				const result = quality();
+				const result = quality(testCase.gate);
 				assert.notEqual(
 					result.status,
 					0,

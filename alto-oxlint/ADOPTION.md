@@ -49,6 +49,11 @@ their normal locations.
 | oxfmt                        | Everything in the repository except `package-lock.json`                                         |
 | `lint-baseline.json`         | Generated from the adopted copy of the standard                                                 |
 
+Semantic scope: every maintained TypeScript file is inside a compiler project. The only
+maintained handwritten JavaScript is `scripts/lint.mjs` and `scripts/checks.mjs`, which sit in
+the generated syntactic-only override; there is no checked-JS project, so the checked-JS row
+of the qualification table has nothing to exercise.
+
 Node test registration: `allowForKnownSafeCalls` is empty, so the framework mapping's
 registration controls do not apply to this repository. The harness keeps awaited top-level
 `node:test` registrations, has no context subtests, and retains `ignoreVoid: false`.

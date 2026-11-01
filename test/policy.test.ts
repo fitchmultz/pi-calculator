@@ -442,6 +442,29 @@ await test("configuration integrity fails on downgrades, allowances, and unmappe
 	}
 });
 
+await test("generated output that no longer matches the standard fails its gate", () => {
+	const scope = project();
+	const generator = join(root, "scripts", "lint-baseline.ts");
+	const standard = join(root, "alto-oxlint", "POLICY.md");
+	try {
+		assert.equal(command(root, process.execPath, [generator, "--policy", standard]).status, 0);
+		scope.write(
+			"alto-oxlint/POLICY.md",
+			`${readFileSync(standard, "utf8")}\n<!-- revised upstream -->\n`,
+		);
+		const stale = command(root, process.execPath, [
+			generator,
+			"--policy",
+			join(scope.dir, "alto-oxlint", "POLICY.md"),
+		]);
+		assert.equal(stale.status, 1, stale.output);
+		assert.match(stale.output, /stale for the policy document/);
+		cpSync(standard, join(scope.dir, "alto-oxlint", "POLICY.md"));
+	} finally {
+		scope.cleanup();
+	}
+});
+
 await test("formatting convergence is checked against the real formatter", () => {
 	const scope = project();
 	try {
