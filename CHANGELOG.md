@@ -1,5 +1,18 @@
 # Changelog
 
+## 4.1.8 - 2026-11-01
+
+<!-- npm-release:unreleased:start -->
+<!-- npm-release:unreleased:end -->
+
+- Adopt the standard at v5.1.2 (1/1) (#52) ([a395ff7](https://github.com/fitchmultz/pi-calculator/commit/a395ff7b2c189eceff10d5a129b6e1d4a69ee5f1))
+
+### What's Changed
+
+- Adopt the standard at v5.1.2 (1/1) by @fitchmultz in https://github.com/fitchmultz/pi-calculator/pull/52
+
+**Full Changelog**: https://github.com/fitchmultz/pi-calculator/compare/v4.1.7...v4.1.8
+
 ## 4.1.7 - 2026-11-01
 
 <!-- npm-release:unreleased:start -->
