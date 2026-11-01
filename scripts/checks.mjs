@@ -7,7 +7,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const npm = process.platform === "win32" ? "npm.cmd" : "npm";
+const isWindows = process.platform === "win32";
+const npm = isWindows ? "npm.cmd" : "npm";
 const gates = process.argv.slice(2);
 if (gates.length === 0) {
 	console.error("usage: node scripts/checks.mjs <gate> [<gate> ...]");
@@ -17,7 +18,9 @@ if (gates.length === 0) {
 const results = [];
 for (const gate of gates) {
 	const started = Date.now();
-	const run = spawnSync(npm, ["run", gate], { cwd: root, encoding: "utf8" });
+	// Spawning `npm.cmd` needs the shell option: Node errors with EINVAL for .cmd files
+	// without it. Gate names are static, so shell quoting has no attack surface here.
+	const run = spawnSync(npm, ["run", gate], { cwd: root, encoding: "utf8", shell: isWindows });
 	if (run.error !== undefined) {
 		console.error(`gate ${gate}: could not run (${String(run.error.message)})`);
 		results.push([gate, 1]);
