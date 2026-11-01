@@ -5,6 +5,7 @@
 <!-- npm-release:unreleased:start -->
 <!-- npm-release:unreleased:end -->
 
+- Restore local extension-load verification by aligning the locked Pi development cohort to 1.4.0.
 - Pin reviewed release source binding (#46) ([2a75d8b](https://github.com/fitchmultz/pi-calculator/commit/2a75d8beebdf247c7703d35b8a5944ab7b9cf7cb))
 
 ### What's Changed
