@@ -14,7 +14,9 @@
 		"expr-eval-fork.d.ts",
 		"README.md",
 		"CHANGELOG.md",
-		"LICENSE"
+		"LICENSE",
+		"statistics.ts",
+		"docs"
 	],
 	"keywords": [
 		"pi-package",
@@ -51,7 +53,8 @@
 	"pi": {
 		"extensions": [
 			"./index.ts"
-		]
+		],
+		"image": "https://raw.githubusercontent.com/fitchmultz/pi-calculator/main/.github/readme/calculator-flow.png"
 	},
 	"dependencies": {
 		"decimal.js": "10.6.0",
