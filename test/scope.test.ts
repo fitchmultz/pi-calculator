@@ -53,7 +53,7 @@ await test("only sources outside every compiler project are exempted from semant
 		assert.equal(written.status, 0, written.output);
 		assert.match(
 			written.output,
-			/generated scope override covers 2 uncovered file/,
+			/generated scope override covers 3 uncovered file/,
 			"both scripts/lint.mjs and the new probe must be covered",
 		);
 		assert.deepEqual(diagnostics(scope.dir, "test/checked.js"), [
@@ -112,12 +112,12 @@ await test("every wrapper invocation composes the same scope", () => {
 		command(scope.dir, "node", ["scripts/lint.mjs", "scope", "--write"]);
 		const listed = command(scope.dir, "node", ["scripts/lint.mjs", "scope"]);
 		assert.equal(listed.status, 0, listed.output);
-		assert.match(listed.output, /Lint scope: \d+ checked files, 1 unchecked file/);
+		assert.match(listed.output, /Lint scope: \d+ checked files, 2 unchecked files/);
 		scope.write("scripts/probe.mjs", "debugger;\n");
 		command(scope.dir, "node", ["scripts/lint.mjs", "scope", "--write"]);
 		const after = command(scope.dir, "node", ["scripts/lint.mjs", "scope"]);
 		assert.equal(after.status, 0, after.output);
-		assert.match(after.output, /Lint scope: \d+ checked files, 2 unchecked files/);
+		assert.match(after.output, /Lint scope: \d+ checked files, 3 unchecked files/);
 	} finally {
 		scope.cleanup();
 	}
