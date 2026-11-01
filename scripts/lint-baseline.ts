@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Regenerate lint-baseline.json from the policy document, or report drift against it.
-// Usage: node scripts/lint-baseline.mjs [--policy <path>] [--write]
+// Usage: node scripts/lint-baseline.ts [--policy <path>] [--write]
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
@@ -87,7 +87,7 @@ if (args.includes("--write")) {
 	console.log(`wrote ${target}`);
 } else if (!matchesTarget(serialized)) {
 	console.error(
-		"lint-baseline.json is stale for the policy document; run: node scripts/lint-baseline.mjs --write",
+		"lint-baseline.json is stale for the policy document; run: node scripts/lint-baseline.ts --write",
 	);
 	process.exit(1);
 } else {

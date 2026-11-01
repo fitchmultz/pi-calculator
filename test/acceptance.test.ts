@@ -30,6 +30,12 @@ await test(
 	"each failure class fails the real quality command on its own",
 	{ timeout: 900_000 },
 	async () => {
+		if (process.env.ACCEPTANCE_CHILD !== undefined) {
+			// The test-gate case runs the aggregate, which runs this file again; the nested
+			// run must not recurse into itself.
+			console.log("SKIP acceptance probes: nested inside the test-gate case");
+			return;
+		}
 		assert.ok(
 			PROBES.every((probe) => !existsSync(join(root, probe))),
 			"acceptance probes must not replace maintained source",
@@ -41,6 +47,7 @@ await test(
 			signal: RegExp;
 			toolchain?: boolean;
 			gate?: string;
+			nested?: boolean;
 		}[] = [
 			{
 				name: "unchecked JavaScript syntax",
@@ -84,6 +91,7 @@ await test(
 				signal: /gate test: fail/,
 				toolchain: true,
 				gate: "verify",
+				nested: true,
 			},
 			{
 				name: "policy downgrade",
@@ -126,7 +134,11 @@ await test(
 						command(root, "node", ["scripts/lint.mjs", "scope", "--write"]);
 					}
 				}
+				if (testCase.nested === true) {
+					process.env.ACCEPTANCE_CHILD = "1";
+				}
 				const result = quality(testCase.gate);
+				delete process.env.ACCEPTANCE_CHILD;
 				assert.notEqual(
 					result.status,
 					0,
