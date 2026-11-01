@@ -76,9 +76,17 @@ negative type test profile's defined allowance, not an exception.
 
 ## Integrated verification
 
-| Revision                                                       | Scope                                                                                                 | Host            | Result                                         |
-| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | --------------- | ---------------------------------------------- |
-| `f5fe15e` (PR #48, standard v5.1.1)                            | full aggregate: lint, format:check, both compiler projects, baseline, policy, tests, behaviour checks | `mitchs-m5-mbp` | pass, exit 0                                   |
-| `f5fe15e` (PR #48, standard v5.1.1)                            | hosted: resolve, compatibility (runs `check:compat`), Cursor, Pi Durable                              | GitHub          | pass                                           |
-| `fdf7bb0`/`3ec5391`/`dbc722f` (this adoption, standard v5.1.2) | full aggregate: the same nine gates                                                                   | `m1-mbp`        | pass, exit 0                                   |
-| `fdf7bb0` (this adoption, standard v5.1.2)                     | hosted CI                                                                                             | GitHub          | recorded on the pull request when it completes |
+Local runs and hosted runs are reported separately, with the revision each one ran on.
+
+| Revision                            | Scope                                                                                                                                                                              | Host                             | Result                                                     |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | ---------------------------------------------------------- |
+| `f5fe15e` (PR #48, standard v5.1.1) | full aggregate: lint, format:check, both compiler projects, baseline, policy, tests, behaviour checks                                                                              | `mitchs-m5-mbp` (full toolchain) | pass, exit 0                                               |
+| `f5fe15e` (PR #48, standard v5.1.1) | hosted: resolve, compatibility (runs `check:compat`), Cursor, Pi Durable                                                                                                           | GitHub                           | pass                                                       |
+| `dfb0384` (PR #52, standard v5.1.2) | the same nine gates                                                                                                                                                                | `m1-mbp` (full toolchain)        | pass, exit 0; also pass at `fdf7bb0`, `3ec5391`, `dbc722f` |
+| `dfb0384` (PR #52, standard v5.1.2) | hosted: resolve, compatibility, Cursor, Pi Durable                                                                                                                                 | GitHub                           | pass                                                       |
+| `50e0e33`, published as `4.1.7`     | registry artifact: manifest, tarball contents, gallery preview URL, fresh consumer install                                                                                         | npm registry                     | pass                                                       |
+| `a395ff7`, published as `4.1.8`     | registry artifact: manifest, tarball contents (`docs/`, `statistics.ts`), gallery preview URL, fresh consumer install; hosted compatibility and release jobs on the release commit | npm registry and GitHub          | pass                                                       |
+
+The published artifact ships runtime sources only, so the repository's own gate scripts cannot
+be executed from the tarball alone; the host-load evidence for a published release is the
+hosted compatibility job run on its release commit, plus the registry and install checks above.
