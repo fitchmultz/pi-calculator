@@ -1,5 +1,18 @@
 # Changelog
 
+## 4.1.7 - 2026-11-01
+
+<!-- npm-release:unreleased:start -->
+<!-- npm-release:unreleased:end -->
+
+- Adopt the strict quality policy baseline and current Pi practice (#48) ([50e0e33](https://github.com/fitchmultz/pi-calculator/commit/50e0e33a0443a2d0ec1c12a5cf4080342ba61850))
+
+### What's Changed
+
+- Adopt the strict quality policy baseline and current Pi practice by @fitchmultz in https://github.com/fitchmultz/pi-calculator/pull/48
+
+**Full Changelog**: https://github.com/fitchmultz/pi-calculator/compare/v4.1.6...v4.1.7
+
 ## 4.1.6 - 2026-11-01
 
 <!-- npm-release:unreleased:start -->
