@@ -5,7 +5,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { join } from "node:path";
-import { cpSync, readFileSync, rmSync } from "node:fs";
+import { cpSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { command, compilerRuns, diagnostics, project, root, toolchainRuns } from "./harness.ts";
 
 function readConfig(dir: string): unknown {
@@ -346,6 +346,78 @@ await test("configuration integrity fails on downgrades, allowances, and unmappe
 			assert.equal(run(), 1, `expected the ${label} change to fail`);
 			cpSync(join(root, ".oxlintrc.json"), join(scope.dir, ".oxlintrc.json"));
 		}
+
+		// Each integrity protection reports the specific finding it enforces.
+		const findings: [() => void, RegExp][] = [
+			[
+				() =>
+					scope.write(
+						".oxlintrc.json",
+						JSON.stringify(withoutMapping(readConfig(scope.dir), "**/check.ts")),
+					),
+				/profile for .* is missing or its rules changed/, // the permitted mapping disappeared
+			],
+			[
+				() =>
+					scope.write(
+						".oxlintrc.json",
+						JSON.stringify(withRule(readConfig(scope.dir), "no-debugger", ["warn"])),
+					),
+				/requires error or off/,
+			],
+			[
+				() =>
+					scope.write(
+						".oxlintrc.json",
+						JSON.stringify(
+							withRule(readConfig(scope.dir), "typescript/no-explicit-any", [
+								"error",
+								{ allowAny: ["value"] },
+							]),
+						),
+					),
+				/nonempty allow/,
+			],
+			[
+				() => {
+					const projectPath = join(scope.dir, "tsconfig.json");
+					const parsed: unknown = JSON.parse(readFileSync(projectPath, "utf8"));
+					if (!isRecord(parsed) || !isStringArray(parsed["include"])) {
+						throw new Error("expected a compiler project with an include list");
+					}
+					parsed["include"] = parsed["include"].filter(
+						(entry) => entry !== "scripts/**/*.ts",
+					);
+					writeFileSync(projectPath, `${JSON.stringify(parsed, null, "\t")}\n`);
+				},
+				/no compiler project covers it/,
+			],
+			[
+				() => {
+					scope.remove("test/probe.ts");
+					scope.remove("alto-oxlint/POLICY.md");
+				},
+				/policy document recorded in the baseline is missing/,
+			],
+		];
+		for (const [change, expected] of findings) {
+			change();
+			const reported = command(root, process.execPath, [
+				VERIFIER,
+				"--root",
+				scope.dir,
+				"--config",
+				join(scope.dir, ".oxlintrc.json"),
+				"--baseline",
+				join(scope.dir, "lint-baseline.json"),
+			]);
+			assert.equal(reported.status, 1, reported.output);
+			assert.match(reported.output, expected);
+			cpSync(join(root, ".oxlintrc.json"), join(scope.dir, ".oxlintrc.json"));
+			cpSync(join(root, "tsconfig.json"), join(scope.dir, "tsconfig.json"));
+			cpSync(join(root, "alto-oxlint/POLICY.md"), join(scope.dir, "alto-oxlint/POLICY.md"));
+			scope.write("test/probe.ts", "export const value = 1;\n");
+		}
 	} finally {
 		scope.cleanup();
 	}
@@ -376,6 +448,33 @@ await test("formatting convergence is checked against the real formatter", () =>
 		scope.cleanup();
 	}
 });
+
+function isStringArray(value: unknown): value is string[] {
+	return Array.isArray(value) && value.every((entry) => typeof entry === "string");
+}
+
+function withoutMapping(config: unknown, entry: string): unknown {
+	if (!isRecord(config) || !Array.isArray(config["overrides"])) {
+		throw new Error("expected a lint configuration with overrides");
+	}
+	const copy = structuredClone(config) as unknown;
+	if (!isRecord(copy) || !Array.isArray(copy["overrides"])) {
+		throw new Error("expected a cloned configuration with overrides");
+	}
+	const kept = copy["overrides"].filter(
+		(override) =>
+			!(
+				isRecord(override) &&
+				Array.isArray(override["files"]) &&
+				override["files"].includes(entry)
+			),
+	);
+	if (kept.length === copy["overrides"].length) {
+		throw new Error(`no override lists ${entry}`);
+	}
+	copy["overrides"] = kept;
+	return copy;
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null;

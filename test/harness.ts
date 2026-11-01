@@ -82,7 +82,11 @@ export function command(cwd: string, executable: string, arguments_: string[]): 
 	if (result.error !== undefined) {
 		throw result.error;
 	}
-	return { status: result.status ?? 1, output: `${result.stdout}${result.stderr}` };
+	const ansi = /\u001B\[[0-9;]*m/g;
+	return {
+		status: result.status ?? 1,
+		output: `${result.stdout}${result.stderr}`.replace(ansi, ""),
+	};
 }
 
 /** oxlint diagnostics for one file, reported as code plus the reported line. */

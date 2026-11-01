@@ -259,8 +259,9 @@ function matches(globPattern: string, file: string): boolean {
 			matches(globPattern.replace(whole, alternative), file),
 		);
 	}
-	const anchored = new RegExp(`^${translateGlob(globPattern)}$`);
-	return anchored.test(file) || (!globPattern.includes("/") && anchored.test(basename(file)));
+	// A glob matches the whole project-relative path; a bare extension pattern does not
+	// reach into directories, which is how the compiler projects scope their sources.
+	return new RegExp(`^${translateGlob(globPattern)}$`).test(file);
 }
 
 function translateGlob(globPattern: string): string {
