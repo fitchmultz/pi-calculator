@@ -1,5 +1,18 @@
 # Changelog
 
+## 4.1.9 - 2026-11-01
+
+<!-- npm-release:unreleased:start -->
+<!-- npm-release:unreleased:end -->
+
+- Record the integrated verification results for both adoptions (#54) ([2d7b601](https://github.com/fitchmultz/pi-calculator/commit/2d7b601e340b2b21f0160532b318434130215eee))
+
+### What's Changed
+
+- Record the integrated verification results for both adoptions (1/1) by @fitchmultz in https://github.com/fitchmultz/pi-calculator/pull/54
+
+**Full Changelog**: https://github.com/fitchmultz/pi-calculator/compare/v4.1.8...v4.1.9
+
 ## 4.1.8 - 2026-11-01
 
 <!-- npm-release:unreleased:start -->
