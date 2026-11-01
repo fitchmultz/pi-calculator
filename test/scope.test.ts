@@ -5,7 +5,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { command, compilerRuns, diagnostics, project } from "./harness.ts";
+import { command, compilerRuns, diagnostics, project, root } from "./harness.ts";
 
 function skipped(scope: string): boolean {
 	if (!compilerRuns(scope)) {
@@ -118,6 +118,25 @@ await test("every wrapper invocation composes the same scope", () => {
 		const after = command(scope.dir, "node", ["scripts/lint.mjs", "scope"]);
 		assert.equal(after.status, 0, after.output);
 		assert.match(after.output, /Lint scope: \d+ checked files, 2 unchecked files/);
+	} finally {
+		scope.cleanup();
+	}
+});
+
+await test("the declarations project holds the augmentation and the consumer that checks it", () => {
+	const scope = project();
+	try {
+		if (skipped(scope.dir)) {
+			return;
+		}
+		const listed = command(scope.dir, join(root, "node_modules", ".bin", "tsc"), [
+			"-p",
+			"tsconfig.declarations.json",
+			"--listFilesOnly",
+		]);
+		assert.equal(listed.status, 0, listed.output);
+		assert.match(listed.output, /expr-eval-fork\.d\.ts/);
+		assert.match(listed.output, /test\/expr-eval-fork\.test-d\.ts/);
 	} finally {
 		scope.cleanup();
 	}
