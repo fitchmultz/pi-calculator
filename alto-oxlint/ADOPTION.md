@@ -76,9 +76,9 @@ negative type test profile's defined allowance, not an exception.
 
 ## Integrated verification
 
-| Revision                                   | Scope                                                                                                 | Host            | Result                                         |
-| ------------------------------------------ | ----------------------------------------------------------------------------------------------------- | --------------- | ---------------------------------------------- |
-| `f5fe15e` (PR #48, standard v5.1.1)        | full aggregate: lint, format:check, both compiler projects, baseline, policy, tests, behaviour checks | `mitchs-m5-mbp` | pass, exit 0                                   |
-| `f5fe15e` (PR #48, standard v5.1.1)        | hosted: resolve, compatibility (runs `check:compat`), Cursor, Pi Durable                              | GitHub          | pass                                           |
-| `fdf7bb0` (this adoption, standard v5.1.2) | full aggregate: the same nine gates                                                                   | `m1-mbp`        | pass, exit 0                                   |
-| `fdf7bb0` (this adoption, standard v5.1.2) | hosted CI                                                                                             | GitHub          | recorded on the pull request when it completes |
+| Revision                                                       | Scope                                                                                                 | Host            | Result                                         |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | --------------- | ---------------------------------------------- |
+| `f5fe15e` (PR #48, standard v5.1.1)                            | full aggregate: lint, format:check, both compiler projects, baseline, policy, tests, behaviour checks | `mitchs-m5-mbp` | pass, exit 0                                   |
+| `f5fe15e` (PR #48, standard v5.1.1)                            | hosted: resolve, compatibility (runs `check:compat`), Cursor, Pi Durable                              | GitHub          | pass                                           |
+| `fdf7bb0`/`3ec5391`/`dbc722f` (this adoption, standard v5.1.2) | full aggregate: the same nine gates                                                                   | `m1-mbp`        | pass, exit 0                                   |
+| `fdf7bb0` (this adoption, standard v5.1.2)                     | hosted CI                                                                                             | GitHub          | recorded on the pull request when it completes |
