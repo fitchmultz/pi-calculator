@@ -56,7 +56,7 @@ Keep expressions within 4,096 characters. See [limits](docs/reference.md#limits)
 
 See [result format](docs/reference.md#result-format) to use the calculator tool from another extension.
 
-Read the [migration notes](https://github.com/fitchmultz/pi-calculator/blob/main/docs/reference.md#migration) before upgrading.
+Read the [migration notes](https://github.com/fitchmultz/pi-calculator/blob/main/docs/reference.md#upgrading-from-v2) before upgrading.
 
 ## Verification
 
