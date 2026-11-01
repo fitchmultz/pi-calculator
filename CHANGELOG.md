@@ -1,5 +1,18 @@
 # Changelog
 
+## 4.1.6 - 2026-11-01
+
+<!-- npm-release:unreleased:start -->
+<!-- npm-release:unreleased:end -->
+
+- Use direct Flash for automatic release remediation (#49) ([544c540](https://github.com/fitchmultz/pi-calculator/commit/544c540e8d12cbe0ec8c6cde7050628f41700a4e))
+
+### What's Changed
+* Use direct Flash for necessary release remediation by @fitchmultz in https://github.com/fitchmultz/pi-calculator/pull/49
+
+
+**Full Changelog**: https://github.com/fitchmultz/pi-calculator/compare/v4.1.5...v4.1.6
+
 ## 4.1.5 - 2026-11-01
 
 <!-- npm-release:unreleased:start -->
