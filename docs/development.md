@@ -11,7 +11,11 @@ npm ci --ignore-scripts
 npm run verify
 ```
 
-`verify` runs type checking, numerical and work-limit checks, then an actual Pi extension-load check. It covers schema and structured result contracts, native nested validation/policy/evaluation errors and native tool-card rendering.
+`verify` runs the quality gates first — both lint passes, the format check, both compiler projects, the baseline drift check and the policy verifier — then the committed harness, the numerical and work-limit checks, and an actual Pi extension-load check. It covers schema and structured result contracts, native nested validation/policy/evaluation errors and native tool-card rendering.
+
+The individual gates run on their own: `npm run lint` (the semantic pass, then compiler diagnostics over the files a compiler project owns), `npm run lint:agent`, `npm run lint:fix`, `npm run format`, `npm run format:check`, `npm test`, `npm run lint:baseline`, and `npm run policy`. The configuration, the baseline it is checked against, and the harness probes are described in [AGENTS.md](../AGENTS.md).
+
+The type-aware lint pass and `tsc` need a host with native builds for `oxlint-tsgolint` and TypeScript. On a host without them (Android on ARM64, for example) the compiler-dependent probes report an explicit skip, so the acceptance gate has to be run on a qualified host or in CI.
 
 The locked development cohort uses Pi 1.4.0 and TypeBox 1.3.27. Pi supplies the schema and terminal UI libraries; `decimal.js` and `expr-eval-fork` are runtime dependencies. No evaluator or grammar compatibility layer is needed.
 
