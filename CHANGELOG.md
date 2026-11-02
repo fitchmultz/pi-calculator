@@ -1,5 +1,18 @@
 # Changelog
 
+## 4.1.11 - 2026-11-02
+
+<!-- npm-release:unreleased:start -->
+<!-- npm-release:unreleased:end -->
+
+- Recheck unreported Cursor reviews in automatic releases (#58) ([63ec250](https://github.com/fitchmultz/pi-calculator/commit/63ec25092a4a718592e548730f0c6c791a09b7c4))
+
+### What's Changed
+
+- Recheck unreported Cursor reviews in automatic releases by @fitchmultz in https://github.com/fitchmultz/pi-calculator/pull/58
+
+**Full Changelog**: https://github.com/fitchmultz/pi-calculator/compare/v4.1.10...v4.1.11
+
 ## 4.1.10 - 2026-11-02
 
 <!-- npm-release:unreleased:start -->
