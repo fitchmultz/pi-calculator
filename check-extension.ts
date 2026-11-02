@@ -164,7 +164,7 @@ try {
 		[false, true].map((expanded) => [width, expanded] as const),
 	);
 
-	// Resolve the companion from the physical SDK (Pi 1.0 shrinkwrap nests it).
+	// Resolve the companion from the physical SDK, which may nest its own pi-ai.
 	const sdkPackageJson = findPackageJSON(
 		"@earendil-works/pi-ai",
 		import.meta.resolve("@earendil-works/pi-coding-agent"),
