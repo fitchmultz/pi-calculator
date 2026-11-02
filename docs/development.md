@@ -17,7 +17,7 @@ The individual gates run on their own: `npm run lint` (the semantic pass, then c
 
 The type-aware lint pass and `tsc` need a host with native builds for `oxlint-tsgolint` and TypeScript. On a host without them (Android on ARM64, for example) the compiler-dependent probes report an explicit skip, so the acceptance gate has to be run on a qualified host or in CI.
 
-The locked development cohort uses Pi 1.4.0 and TypeBox 1.3.27. Pi supplies the schema and terminal UI libraries; `decimal.js` and `expr-eval-fork` are runtime dependencies. No evaluator or grammar compatibility layer is needed.
+The locked development cohort uses Pi 1.5.0 and TypeBox 1.3.27. Pi supplies the schema and terminal UI libraries; `decimal.js` and `expr-eval-fork` are runtime dependencies. No evaluator or grammar compatibility layer is needed.
 
 Update the development TypeBox pin alongside the qualified Pi host, using the version that host ships. Independent TypeBox updates are disabled in Renovate because they install duplicate host schema libraries and slow development startup. Each compatibility lane selects its host's TypeBox version.
 
