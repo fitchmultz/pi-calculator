@@ -1,5 +1,18 @@
 # Changelog
 
+## 4.1.10 - 2026-11-02
+
+<!-- npm-release:unreleased:start -->
+<!-- npm-release:unreleased:end -->
+
+- Raise the Pi floor to 1.5.0 (#56) ([07b253d](https://github.com/fitchmultz/pi-calculator/commit/07b253d853625679f0d31e77831a4adf2c7b1354))
+
+### What's Changed
+
+- Raise the Pi floor to 1.5.0 by @fitchmultz in https://github.com/fitchmultz/pi-calculator/pull/56
+
+**Full Changelog**: https://github.com/fitchmultz/pi-calculator/compare/v4.1.9...v4.1.10
+
 ## 4.1.9 - 2026-11-01
 
 <!-- npm-release:unreleased:start -->
