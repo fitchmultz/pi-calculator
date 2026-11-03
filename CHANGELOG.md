@@ -1,5 +1,18 @@
 # Changelog
 
+## 4.1.12 - 2026-11-03
+
+<!-- npm-release:unreleased:start -->
+<!-- npm-release:unreleased:end -->
+
+- Skip no-op releases and restate malformed remediation dispositions (#61) ([c208405](https://github.com/fitchmultz/pi-calculator/commit/c20840532f0216aaddd970a561b79853015405ed))
+
+### What's Changed
+
+- Skip no-op releases and restate malformed remediation dispositions by @fitchmultz in https://github.com/fitchmultz/pi-calculator/pull/61
+
+**Full Changelog**: https://github.com/fitchmultz/pi-calculator/compare/v4.1.11...v4.1.12
+
 ## 4.1.11 - 2026-11-02
 
 <!-- npm-release:unreleased:start -->
