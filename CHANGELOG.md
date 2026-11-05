@@ -1,5 +1,18 @@
 # Changelog
 
+## 4.1.13 - 2026-11-05
+
+<!-- npm-release:unreleased:start -->
+<!-- npm-release:unreleased:end -->
+
+- Merge pull request #63 from fitchmultz/fix/qualification-isolation ([10451d3](https://github.com/fitchmultz/pi-calculator/commit/10451d3f80a4d7c674b99506701d917e1c5f3a8d))
+
+### What's Changed
+
+- Serialize shared-checkout policy probes by @fitchmultz in https://github.com/fitchmultz/pi-calculator/pull/63
+
+**Full Changelog**: https://github.com/fitchmultz/pi-calculator/compare/v4.1.12...v4.1.13
+
 ## 4.1.12 - 2026-11-03
 
 <!-- npm-release:unreleased:start -->
