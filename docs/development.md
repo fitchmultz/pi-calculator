@@ -13,6 +13,8 @@ npm run verify
 
 `verify` runs the quality gates first — both lint passes, the format check, both compiler projects, the baseline drift check and the policy verifier — then the committed harness, the numerical and work-limit checks, and an actual Pi extension-load check. It covers schema and structured result contracts, native nested validation/policy/evaluation errors and native tool-card rendering.
 
+The test runner executes one file at a time. Acceptance probes temporarily change the checkout's lint configuration, so other suites must not copy that configuration until the probes restore it.
+
 The individual gates run on their own: `npm run lint` (the semantic pass, then compiler diagnostics over the files a compiler project owns), `npm run lint:agent`, `npm run lint:fix`, `npm run format`, `npm run format:check`, `npm test`, `npm run lint:baseline`, and `npm run policy`. The configuration, the baseline it is checked against, and the harness probes are described in [AGENTS.md](../AGENTS.md).
 
 The type-aware lint pass and `tsc` need a host with native builds for `oxlint-tsgolint` and TypeScript. On a host without them (Android on ARM64, for example) the compiler-dependent probes report an explicit skip, so the acceptance gate has to be run on a qualified host or in CI.

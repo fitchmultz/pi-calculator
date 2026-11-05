@@ -42,7 +42,7 @@
 		"format": "oxfmt --write .",
 		"format:check": "oxfmt --check .",
 		"policy": "node scripts/policy.ts",
-		"test": "node --test \"test/**/*.test.ts\"",
+		"test": "node --test --test-concurrency=1 \"test/**/*.test.ts\"",
 		"verify": "node scripts/checks.mjs lint format:check typecheck typecheck:declarations lint:baseline policy test check check:load",
 		"check:compat": "npm run verify",
 		"lint:baseline": "node scripts/lint-baseline.ts",
