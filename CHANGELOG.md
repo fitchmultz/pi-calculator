@@ -1,5 +1,18 @@
 # Changelog
 
+## 4.1.14 - 2026-11-11
+
+<!-- npm-release:unreleased:start -->
+<!-- npm-release:unreleased:end -->
+
+- Wake the version workflow only for release events and drop the duplicate main CI run (#65) ([badd7bf](https://github.com/fitchmultz/pi-calculator/commit/badd7bf27d51934a2f0aca2b1306eeda607ca4b7))
+
+### What's Changed
+
+- Wake the version workflow only for release events and drop the duplicate main CI run by @fitchmultz in https://github.com/fitchmultz/pi-calculator/pull/65
+
+**Full Changelog**: https://github.com/fitchmultz/pi-calculator/compare/v4.1.13...v4.1.14
+
 ## 4.1.13 - 2026-11-05
 
 <!-- npm-release:unreleased:start -->
