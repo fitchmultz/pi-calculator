@@ -17,7 +17,7 @@ their normal locations.
 
 | Item            | Value                                                       |
 | --------------- | ----------------------------------------------------------- |
-| Node.js         | `>=24.0.0` (`package.json` `engines.node`)                  |
+| Node.js         | 24.22.3+ (24.x) or 26.13.1+ (`package.json` `engines.node`) |
 | Package manager | npm, lockfile version 3 (`package-lock.json`, owned by npm) |
 | oxlint          | 1.90.0                                                      |
 | oxfmt           | 0.75.0                                                      |
