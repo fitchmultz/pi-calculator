@@ -4,7 +4,7 @@
 
 ## Installation options
 
-Requires Node.js 24 or later and Pi 1.5.0 or later. The published npm package is `@fitchmultz/pi-calculator`.
+Requires Node.js 24.22.3 (24.x) or 26.13.1 and later and Pi 1.5.0 or later. The published npm package is `@fitchmultz/pi-calculator`.
 
 ```sh
 pi install npm:@fitchmultz/pi-calculator

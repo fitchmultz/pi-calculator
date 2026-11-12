@@ -4,7 +4,7 @@
 
 ## Local verification
 
-Requires Node.js 24 or later. From a checkout:
+Requires Node.js 24.22.3 (24.x) or 26.13.1 and later. From a checkout:
 
 ```sh
 npm ci --ignore-scripts
