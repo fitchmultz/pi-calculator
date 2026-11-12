@@ -1,5 +1,19 @@
 # Changelog
 
+## 4.1.15 - 2026-11-12
+
+<!-- npm-release:unreleased:start -->
+<!-- npm-release:unreleased:end -->
+
+- ci: align shared automation pins and wire release supersession inputs (#67) ([5a05909](https://github.com/fitchmultz/pi-calculator/commit/5a0590934b78cbbcd04c97e7238cb73f5239568e))
+
+### What's Changed
+
+- ci: align shared automation pins and wire release supersession inputs by @fitchmultz in https://github.com/fitchmultz/pi-calculator/pull/67
+- chore: require patched Node.js security releases by @fitchmultz in https://github.com/fitchmultz/pi-calculator/pull/68
+
+**Full Changelog**: https://github.com/fitchmultz/pi-calculator/compare/v4.1.14...v4.1.15
+
 ## 4.1.14 - 2026-11-11
 
 <!-- npm-release:unreleased:start -->
