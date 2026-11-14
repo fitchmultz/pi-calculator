@@ -2,20 +2,24 @@
 // Verify the lint configuration against the committed policy baseline, scan maintained
 // sources for suppressions, and report which profile, lint scope, compiler project, and
 // formatter owns each maintained file. Run through npm run policy so failures propagate.
-import { createHash } from "node:crypto";
+import { hash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
-import { basename, dirname, join, relative, sep } from "node:path";
+import { basename, dirname, join, posix, relative, sep } from "node:path";
+import { parseArgs } from "node:util";
 import { generatedOverride } from "./scope-override.ts";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)));
-const root = option("--root") ?? repoRoot;
+const { values: cli } = parseArgs({
+	options: {
+		root: { type: "string" },
+		baseline: { type: "string" },
+		config: { type: "string" },
+	},
+	strict: false,
+});
+const root = typeof cli.root === "string" ? cli.root : repoRoot;
 const failures: string[] = [];
-
-function option(name: string): string | undefined {
-	const index = process.argv.indexOf(name);
-	return index === -1 ? undefined : process.argv[index + 1];
-}
 
 function fail(message: string): void {
 	failures.push(message);
@@ -103,7 +107,9 @@ function profileList(document: Record<string, unknown>): Profile[] {
 	});
 }
 
-const baselineDocument = readObject(option("--baseline") ?? join(root, "lint-baseline.json"));
+const baselineDocument = readObject(
+	typeof cli.baseline === "string" ? cli.baseline : join(root, "lint-baseline.json"),
+);
 const baseline = field(baselineDocument, "baseline");
 const policySection = field(baselineDocument, "policy");
 const policyPath = text(policySection["path"]);
@@ -118,7 +124,7 @@ function checkPolicyDigest(): void {
 		fail("the policy document recorded in the baseline is missing");
 		return;
 	}
-	const digest = createHash("sha256").update(readFileSync(documentPath, "utf8")).digest("hex");
+	const digest = hash("sha256", readFileSync(documentPath, "utf8"), "hex");
 	if (digest !== recordedDigest) {
 		fail(
 			`policy document changed (${policyRevision ?? "unknown revision"}): recorded ${recordedDigest}, current ${digest}; run: node scripts/lint-baseline.ts --write`,
@@ -126,7 +132,9 @@ function checkPolicyDigest(): void {
 	}
 }
 
-const config = readObject(option("--config") ?? join(root, ".oxlintrc.json"));
+const config = readObject(
+	typeof cli.config === "string" ? cli.config : join(root, ".oxlintrc.json"),
+);
 compare("plugins", baseline["plugins"], config["plugins"]);
 compare("categories", baseline["categories"], config["categories"]);
 compare("options", baseline["options"], config["options"]);
@@ -253,54 +261,8 @@ function uncoveredSources(): string[] {
 	return [...uncovered];
 }
 
-/** Match a file against a profile glob, covering the shapes the config actually uses. */
-function matches(globPattern: string, file: string): boolean {
-	const braced = /\{([^}]*)\}/.exec(globPattern);
-	if (braced !== null) {
-		const whole = braced[0];
-		const alternatives = (braced[1] ?? "").split(",");
-		return alternatives.some((alternative) =>
-			matches(globPattern.replace(whole, alternative), file),
-		);
-	}
-	// A glob matches the whole project-relative path; a bare extension pattern does not
-	// reach into directories, which is how the compiler projects scope their sources.
-	return new RegExp(`^${translateGlob(globPattern)}$`).test(file);
-}
-
-function translateGlob(globPattern: string): string {
-	let source = "";
-	let index = 0;
-	while (index < globPattern.length) {
-		if (globPattern.startsWith("**/", index)) {
-			source += "(?:[^/]+/)*";
-			index += 3;
-			continue;
-		}
-		if (globPattern.startsWith("**", index)) {
-			source += `.*`;
-			index += 2;
-			continue;
-		}
-		const char = globPattern[index] ?? "";
-		if (char === "*") {
-			source += "[^/]*";
-			index += 1;
-			continue;
-		}
-		if (char === "?") {
-			source += "[^/]";
-			index += 1;
-			continue;
-		}
-		source += /[.+^${}()|[\]\\/]/.test(char) ? `\\${char}` : char;
-		index += 1;
-	}
-	return source;
-}
-
 function matchesAny(globs: string[], file: string): boolean {
-	return globs.some((globPattern) => matches(globPattern, file));
+	return globs.some((globPattern) => posix.matchesGlob(file, globPattern));
 }
 
 function stringList(document: Record<string, unknown>): string[] {
