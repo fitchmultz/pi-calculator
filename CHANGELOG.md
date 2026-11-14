@@ -1,5 +1,18 @@
 # Changelog
 
+## 4.1.16 - 2026-11-14
+
+<!-- npm-release:unreleased:start -->
+<!-- npm-release:unreleased:end -->
+
+- Raise the Pi floor to 1.5.2 and use Node 24/ES2025 built-ins in policy scripts (#70) ([25da2dc](https://github.com/fitchmultz/pi-calculator/commit/25da2dc670e3a3e16ec928b1696f4defd9a1510a))
+
+### What's Changed
+
+- Raise the Pi floor to 1.5.2 and use Node 24/ES2025 built-ins in policy scripts by @fitchmultz in https://github.com/fitchmultz/pi-calculator/pull/70
+
+**Full Changelog**: https://github.com/fitchmultz/pi-calculator/compare/v4.1.15...v4.1.16
+
 ## 4.1.15 - 2026-11-12
 
 <!-- npm-release:unreleased:start -->
