@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 // Regenerate lint-baseline.json from the policy document, or report drift against it.
 // Usage: node scripts/lint-baseline.ts [--policy <path>] [--write]
-import { createHash } from "node:crypto";
+import { hash } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
+import { parseArgs } from "node:util";
 
 function parseJson(text: string): unknown {
 	return JSON.parse(text) as unknown;
@@ -15,13 +16,15 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const args = process.argv.slice(2);
-const policyPath = option("--policy") ?? join(root, "alto-oxlint", "POLICY.md");
-
-function option(name: string): string | undefined {
-	const index = args.indexOf(name);
-	return index === -1 ? undefined : args[index + 1];
-}
+const { values: cli } = parseArgs({
+	options: {
+		policy: { type: "string" },
+		write: { type: "boolean", default: false },
+	},
+	strict: false,
+});
+const policyPath =
+	typeof cli.policy === "string" ? cli.policy : join(root, "alto-oxlint", "POLICY.md");
 
 /** The version line the standard opens with, or a bolded "**Label:** value" header field. */
 function version(): string | undefined {
@@ -30,7 +33,7 @@ function version(): string | undefined {
 }
 
 function field(label: string): string | undefined {
-	const pattern = new RegExp(`^\\*\\*${label}:\\*\\*\\s*(.+)$`, "m");
+	const pattern = new RegExp(`^\\*\\*${RegExp.escape(label)}:\\*\\*\\s*(.+)$`, "m");
 	return pattern.exec(policyText)?.[1]?.trim();
 }
 
@@ -66,7 +69,7 @@ const document: {
 		path: relative(root, policyPath),
 		version: version(),
 		releaseId: field("Release ID") ?? version(),
-		digest: createHash("sha256").update(policyText).digest("hex"),
+		digest: hash("sha256", policyText, "hex"),
 	},
 	baseline: baselineFrom(policyText),
 };
@@ -82,7 +85,7 @@ function readJson(path: string): unknown {
 	return parseJson(readFileSync(path, "utf8"));
 }
 
-if (args.includes("--write")) {
+if (cli.write === true) {
 	writeFileSync(target, serialized);
 	console.log(`wrote ${target}`);
 } else if (!matchesTarget(serialized)) {
