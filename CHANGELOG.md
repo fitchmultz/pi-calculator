@@ -1,5 +1,18 @@
 # Changelog
 
+## 4.1.17 - 2026-11-17
+
+<!-- npm-release:unreleased:start -->
+<!-- npm-release:unreleased:end -->
+
+- ci: release through direct signed version commits (PEA-211) (#72) ([50bf054](https://github.com/fitchmultz/pi-calculator/commit/50bf05444691acdb5385f907f2789460d86b4555))
+
+### What's Changed
+
+- ci: release through direct signed version commits (PEA-211) (1/1) by @fitchmultz in https://github.com/fitchmultz/pi-calculator/pull/72
+
+**Full Changelog**: https://github.com/fitchmultz/pi-calculator/compare/v4.1.16...v4.1.17
+
 ## 4.1.16 - 2026-11-14
 
 <!-- npm-release:unreleased:start -->
