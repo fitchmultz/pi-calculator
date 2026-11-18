@@ -1,5 +1,19 @@
 # Changelog
 
+## 4.1.18 - 2026-11-18
+
+<!-- npm-release:unreleased:start -->
+<!-- npm-release:unreleased:end -->
+
+- refactor: use Decimal constants, C1-safe muted header, and import.meta.dirname (PEA-214) (1/2) (#73) ([5e7f9f8](https://github.com/fitchmultz/pi-calculator/commit/5e7f9f8b7162d074607c1d444e77c1446e220bfd))
+
+### What's Changed
+
+- refactor: use Decimal constants, C1-safe muted header, and import.meta.dirname (PEA-214) (1/2) by @fitchmultz in https://github.com/fitchmultz/pi-calculator/pull/73
+- ci: adopt shared Pi compatibility workflow and remove mutation probes (PEA-214) (2/2) by @fitchmultz in https://github.com/fitchmultz/pi-calculator/pull/74
+
+**Full Changelog**: https://github.com/fitchmultz/pi-calculator/compare/v4.1.17...v4.1.18
+
 ## 4.1.17 - 2026-11-17
 
 <!-- npm-release:unreleased:start -->
