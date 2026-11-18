@@ -1,5 +1,18 @@
 # Changelog
 
+## 4.1.19 - 2026-11-18
+
+<!-- npm-release:unreleased:start -->
+<!-- npm-release:unreleased:end -->
+
+- chore(quality): adopt tsrs@7.1.0-beta.tsrs2 and bump oxlint/oxfmt (#76) ([d1f3824](https://github.com/fitchmultz/pi-calculator/commit/d1f3824466e6ae86a213eb611ae2da58aa8c0d99))
+
+### What's Changed
+
+- chore(quality): adopt tsrs@7.1.0-beta.tsrs2 and bump oxlint/oxfmt by @fitchmultz in https://github.com/fitchmultz/pi-calculator/pull/76
+
+**Full Changelog**: https://github.com/fitchmultz/pi-calculator/compare/v4.1.18...v4.1.19
+
 ## 4.1.18 - 2026-11-18
 
 <!-- npm-release:unreleased:start -->
