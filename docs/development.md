@@ -11,7 +11,7 @@ npm ci --ignore-scripts
 npm run verify
 ```
 
-`verify` runs the quality gates first — both lint passes, the format check, both compiler projects, the baseline drift check and the policy verifier — then the numerical and work-limit checks (`check.ts`) and an actual Pi extension-load check (`check-extension.ts`). It covers schema and structured result contracts, native nested validation/policy/evaluation errors and native tool-card rendering.
+`verify` runs the quality gates first — both lint passes, the format check, both compiler projects, the baseline drift check and the policy verifier — then the policy/scope regression suite (`test/policy.test.ts` and `test/scope.test.ts`), the numerical and work-limit checks (`check.ts`), and an actual Pi extension-load check (`check-extension.ts`). It covers schema and structured result contracts, native nested validation/policy/evaluation errors and native tool-card rendering.
 
 The individual gates run on their own: `npm run lint` (the semantic pass, then compiler diagnostics over the files a compiler project owns), `npm run lint:agent`, `npm run lint:fix`, `npm run format`, `npm run format:check`, `npm test`, `npm run lint:baseline`, and `npm run policy`. The configuration and baseline are described in [AGENTS.md](../AGENTS.md).
 
