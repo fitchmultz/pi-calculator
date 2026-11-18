@@ -65,8 +65,8 @@ registration controls do not apply to this repository. The harness keeps awaited
 
 ## Migration status
 
-Complete. Configuration, profiles, generated override, verifier, acceptance wiring, probe
-harness, and agent instructions all describe the repository as it is now.
+Complete. Configuration, profiles, generated override, verifier, and agent instructions all
+describe the repository as it is now.
 
 ## Quality exceptions
 
