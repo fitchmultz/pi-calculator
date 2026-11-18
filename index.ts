@@ -1,3 +1,4 @@
+import { inspect } from "node:util";
 import { Type } from "typebox";
 import { Text } from "@earendil-works/pi-tui";
 import { defineTool, type ExtensionAPI } from "@earendil-works/pi-coding-agent";
@@ -35,7 +36,13 @@ const calculatorTool = defineTool({
 	renderCall(args: { readonly expression?: string }, theme) {
 		return new Text(
 			theme.fg("toolTitle", theme.bold("calculator ")) +
-				theme.fg("dim", JSON.stringify(args.expression ?? "")),
+				theme.fg(
+					"muted",
+					inspect(args.expression ?? "", {
+						breakLength: Infinity,
+						maxStringLength: Infinity,
+					}),
+				),
 			0,
 			0,
 		);
