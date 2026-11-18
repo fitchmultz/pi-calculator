@@ -98,7 +98,7 @@ export function diagnostics(cwd: string, file: string, typeAware = true): string
 		"--format=json",
 		file,
 	]);
-	if (/tsgolint/i.test(result.output) && !result.output.trimStart().startsWith("{")) {
+	if (/(?:tsgolint|tsrs)/i.test(result.output) && !result.output.trimStart().startsWith("{")) {
 		throw new Error(`type-aware lint cannot run on this host: ${result.output.trim()}`);
 	}
 	const report: unknown = JSON.parse(result.output.slice(result.output.indexOf("{")));

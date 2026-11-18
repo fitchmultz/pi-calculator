@@ -80,7 +80,7 @@ function leadingCoefficient(
 	// Normalized chunks have magnitude < base, so the leading remaining chunk
 	// determines the tail's sign.
 	let shift = 0n;
-	const tail = index < keys.length ? keys[index] : undefined;
+	const tail = keys[index];
 	if (tail !== undefined) {
 		shift = BigInt(Math.max(2, retained - digitCount(coefficient)));
 		coefficient = coefficient * 10n ** shift + (bin(bins, tail) > 0n ? 1n : -1n);

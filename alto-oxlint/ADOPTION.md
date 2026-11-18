@@ -19,14 +19,14 @@ their normal locations.
 | --------------- | ----------------------------------------------------------- |
 | Node.js         | 24.22.3+ (24.x) or 26.13.1+ (`package.json` `engines.node`) |
 | Package manager | npm, lockfile version 3 (`package-lock.json`, owned by npm) |
-| oxlint          | 1.90.0                                                      |
-| oxfmt           | 0.75.0                                                      |
-| oxlint-tsgolint | 7.0.2005                                                    |
+| oxlint          | 1.94.0                                                      |
+| oxfmt           | 0.79.0                                                      |
+| tsrs            | 7.1.0-beta.tsrs2                                            |
 | TypeScript      | 7.0.2                                                       |
 
 The standard prescribes no package version numbers; it asks for the current stable releases,
-resolved reproducibly. The versions above are the current stable releases on the registry as of
-this adoption, so nothing here is a lagging pin. Renovate owns keeping them current, and the
+resolved reproducibly (`oxlint` and `oxfmt` above are current stable releases as of 2026-11-18,
+while prerelease `tsrs@7.1.0-beta.tsrs2` is documented under `QX-001` below). Renovate owns keeping them current, and the
 lockfile records the resolution for reproducibility without slowing updates.
 
 ## Configuration and acceptance paths
@@ -70,22 +70,32 @@ describe the repository as it is now.
 
 ## Quality exceptions
 
-None. No rule, option, threshold, or scope is adjusted away from the standard. The single
-`@ts-expect-error` in `test/expr-eval-fork.test-d.ts` carries a description and is the
-negative type test profile's defined allowance, not an exception.
+The single `@ts-expect-error` in `test/expr-eval-fork.test-d.ts` carries a description and is the
+negative type test profile's defined allowance, not an exception. No lint rule, threshold, or
+source directive is relaxed.
+
+### QX-001 — Prerelease `tsrs` type-aware backend in place of stable `oxlint-tsgolint`
+
+- **ID and title:** `QX-001` — adopt prerelease `tsrs@7.1.0-beta.tsrs2` as the type-aware lint backend instead of stable `oxlint-tsgolint`.
+- **Rule, installed tools:** Standard §5.1 ("latest stable published releases of Oxlint, `oxlint-tsgolint`, Oxfmt"); `oxlint 1.94.0` (`2026-11-16T12:26Z`), `tsrs 7.1.0-beta.tsrs2` (`2026-11-16T11:59Z`), `oxfmt 0.79.0` (`2026-11-16T12:27Z`), TypeScript `7.0.2`.
+- **Scope:** `package.json` / `package-lock.json` `devDependencies` and type-aware lint execution (`oxlint` discovers `node_modules/.bin/tsrs-lint` automatically).
+- **Contract and alternative:** `tsrs` publishes prereleases only (`dist-tags.latest` is `0.25.0-ts7.1.0-beta`; `7.1.0-beta.tsrs2` is an untagged newer prerelease targeting `TypeScript 7.1.0-beta` `microsoft/TypeScript@3e9236361fa9`; stable `oxlint-tsgolint@7.0.2007` remains published on npm). In a matched A/B benchmark on `mitchs-m5-mbp` (Darwin arm64, `oxlint 1.94.0` running `oxlint --deny-warnings .`, median of 3 warm runs each via `OXLINT_TSGOLINT_PATH`), `oxlint-tsgolint@7.0.2007` took `0.40s` wall time and `519.7 MiB` maximum RSS, whereas `tsrs@7.1.0-beta.tsrs2` took `0.15s` wall time and `215.9 MiB` maximum RSS (`tsrs` was `2.67x` faster with `2.41x` / `303.8 MiB` lower peak RSS; both exited `0`).
+- **Adjustment and verification:** Owner-approved backend substitution; `oxlint 1.94.0` discovers `tsrs-lint` natively and fails closed if missing. Verified at revision `0f351c5` (`2026-11-18`) via `npm run check:compat` (`lint`, `format:check`, `typecheck`, `typecheck:declarations`, `lint:baseline`, `policy`, `test` including `test/scope.test.ts` and `test/policy.test.ts` `typescript(no-floating-promises)` diagnostic probes, `check`, `check:load`; all nine gates exit `0`) while keeping `alto-oxlint/POLICY.md` and `lint-baseline.json` verbatim `v5.1.2`. Canonical `tsc 7.0.2` (`typecheck` / `typecheck:declarations`) runs independently alongside `tsrs` (`TypeScript 7.1.0-beta`).
+- **Revisit trigger:** First stable `tsrs` release, any `oxlint` release changing backend discovery, or any type-aware diagnostic regression.
 
 ## Integrated verification
 
 Local runs and hosted runs are reported separately, with the revision each one ran on.
 
-| Revision                            | Scope                                                                                                                                                                              | Host                             | Result                                                     |
-| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | ---------------------------------------------------------- |
-| `f5fe15e` (PR #48, standard v5.1.1) | full aggregate: lint, format:check, both compiler projects, baseline, policy, tests, behaviour checks                                                                              | `mitchs-m5-mbp` (full toolchain) | pass, exit 0                                               |
-| `f5fe15e` (PR #48, standard v5.1.1) | hosted: resolve, compatibility (runs `check:compat`), Cursor, Pi Durable                                                                                                           | GitHub                           | pass                                                       |
-| `dfb0384` (PR #52, standard v5.1.2) | the same nine gates                                                                                                                                                                | `m1-mbp` (full toolchain)        | pass, exit 0; also pass at `fdf7bb0`, `3ec5391`, `dbc722f` |
-| `dfb0384` (PR #52, standard v5.1.2) | hosted: resolve, compatibility, Cursor, Pi Durable                                                                                                                                 | GitHub                           | pass                                                       |
-| `50e0e33`, published as `4.1.7`     | registry artifact: manifest, tarball contents, gallery preview URL, fresh consumer install                                                                                         | npm registry                     | pass                                                       |
-| `a395ff7`, published as `4.1.8`     | registry artifact: manifest, tarball contents (`docs/`, `statistics.ts`), gallery preview URL, fresh consumer install; hosted compatibility and release jobs on the release commit | npm registry and GitHub          | pass                                                       |
+| Revision                                               | Scope                                                                                                                                                                              | Host                             | Result                                                     |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | ---------------------------------------------------------- |
+| `f5fe15e` (PR #48, standard v5.1.1)                    | full aggregate: lint, format:check, both compiler projects, baseline, policy, tests, behaviour checks                                                                              | `mitchs-m5-mbp` (full toolchain) | pass, exit 0                                               |
+| `f5fe15e` (PR #48, standard v5.1.1)                    | hosted: resolve, compatibility (runs `check:compat`), Cursor, Pi Durable                                                                                                           | GitHub                           | pass                                                       |
+| `dfb0384` (PR #52, standard v5.1.2)                    | the same nine gates                                                                                                                                                                | `m1-mbp` (full toolchain)        | pass, exit 0; also pass at `fdf7bb0`, `3ec5391`, `dbc722f` |
+| `dfb0384` (PR #52, standard v5.1.2)                    | hosted: resolve, compatibility, Cursor, Pi Durable                                                                                                                                 | GitHub                           | pass                                                       |
+| `50e0e33`, published as `4.1.7`                        | registry artifact: manifest, tarball contents, gallery preview URL, fresh consumer install                                                                                         | npm registry                     | pass                                                       |
+| `a395ff7`, published as `4.1.8`                        | registry artifact: manifest, tarball contents (`docs/`, `statistics.ts`), gallery preview URL, fresh consumer install; hosted compatibility and release jobs on the release commit | npm registry and GitHub          | pass                                                       |
+| `0f351c5` (PR #76 toolchain/code commit, `2026-11-18`) | `npm run check:compat` (`oxlint 1.94.0`, `tsrs 7.1.0-beta.tsrs2`, `oxfmt 0.79.0`, `tsc`, baseline, policy, tests, behaviour checks)                                                | `mitchs-m5-mbp` (full toolchain) | pass, exit 0                                               |
 
 The published artifact ships runtime sources only, so the repository's own gate scripts cannot
 be executed from the tarball alone; the host-load evidence for a published release is the
