@@ -7,9 +7,8 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { basename, dirname, join, posix, relative, sep } from "node:path";
 import { parseArgs } from "node:util";
 import { generatedOverride } from "./scope-override.ts";
-import { fileURLToPath } from "node:url";
 
-const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)));
+const repoRoot = dirname(import.meta.dirname);
 const { values: cli } = parseArgs({
 	options: {
 		root: { type: "string" },

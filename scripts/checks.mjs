@@ -3,10 +3,9 @@
 // aggregate: the exit status is nonzero when any gate failed. Writing/fixing commands are
 // conveniences; acceptance uses these check gates.
 import { spawnSync } from "node:child_process";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 
-const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+const root = join(import.meta.dirname, "..");
 const isWindows = process.platform === "win32";
 const npm = isWindows ? "npm.cmd" : "npm";
 const gates = process.argv.slice(2);

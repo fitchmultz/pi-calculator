@@ -18,12 +18,15 @@ function quality(gate = "check:quality"): ReturnType<typeof command> {
 	return command(root, "npm", ["run", gate]);
 }
 
+function formatPaths(...paths: readonly string[]): void {
+	command(root, "npx", ["--no-install", "oxfmt", "--write", ...paths]);
+}
+
 function clean(): void {
 	for (const probe of PROBES) {
 		rmSync(join(root, probe), { force: true });
 	}
 	writeFileSync(join(root, ".oxlintrc.json"), original);
-	command(root, "npm", ["run", "format:write"]);
 }
 
 await test(
@@ -123,16 +126,16 @@ await test(
 						join(root, ".oxlintrc.json"),
 						`${JSON.stringify(config, null, "\t")}\n`,
 					);
-					command(root, "npm", ["run", "format:write"]);
+					formatPaths(".oxlintrc.json");
 				} else {
 					writeFileSync(join(root, testCase.path), testCase.source);
-					if (testCase.name !== "formatting") {
-						command(root, "npm", ["run", "format:write"]);
-					}
 					if (testCase.path.endsWith(".js")) {
 						// A new uncovered file needs its generated override before the
 						// syntax finding is the only thing left to fail on.
 						command(root, "node", ["scripts/lint.mjs", "scope", "--write"]);
+						formatPaths(testCase.path, ".oxlintrc.json");
+					} else if (testCase.name !== "formatting") {
+						formatPaths(testCase.path);
 					}
 				}
 				if (testCase.nested === true) {

@@ -395,6 +395,21 @@ try {
 				renders++;
 			}
 		}
+
+		const c1Card = new ToolExecutionComponent(
+			"calculator",
+			"check-c1-render",
+			{ expression: "1+\u009b31m2" },
+			{ showImages: false },
+			calculator,
+			ui,
+			process.cwd(),
+		);
+		c1Card.setArgsComplete();
+		const c1Rendered = c1Card.render(80).map(stripVTControlCharacters).join("\n");
+		if (c1Rendered.includes("\u009b") || !c1Rendered.includes('"1+\\u009b31m2"')) {
+			throw new Error(`calculator header left raw C1 control characters: ${c1Rendered}`);
+		}
 	} finally {
 		session.dispose();
 	}

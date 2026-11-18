@@ -3,8 +3,7 @@
 // Usage: node scripts/lint-baseline.ts [--policy <path>] [--write]
 import { hash } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join, relative } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join, relative } from "node:path";
 import { parseArgs } from "node:util";
 
 function parseJson(text: string): unknown {
@@ -15,7 +14,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+const root = join(import.meta.dirname, "..");
 const { values: cli } = parseArgs({
 	options: {
 		policy: { type: "string" },
