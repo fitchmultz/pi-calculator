@@ -15,7 +15,7 @@ npm run verify
 
 The individual gates run on their own: `npm run lint` (the semantic pass, then compiler diagnostics over the files a compiler project owns), `npm run lint:agent`, `npm run lint:fix`, `npm run format`, `npm run format:check`, `npm test`, `npm run lint:baseline`, and `npm run policy`. The configuration and baseline are described in [AGENTS.md](../AGENTS.md).
 
-The type-aware lint pass and `tsc` need a host with native builds for `oxlint-tsgolint` and TypeScript. On a host without them (Android on ARM64, for example), run `npm run verify` on a qualified host or in CI.
+The type-aware lint pass and `tsc` need a host with native builds for `tsrs` and TypeScript. On a host without them (Android on ARM64, for example), run `npm run verify` on a qualified host or in CI.
 
 The locked development cohort uses Pi 1.5.2 and TypeBox 1.3.27. Pi supplies the schema and terminal UI libraries; `decimal.js` and `expr-eval-fork` are runtime dependencies. No evaluator or grammar compatibility layer is needed.
 

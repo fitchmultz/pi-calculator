@@ -23,5 +23,5 @@ owners for every maintained file, and the verification result.
   standard and regenerate; do not edit generated files by hand.
 - Suppressions are not used in ordinary source. A deviation from the standard needs a quality
   exception recorded in `alto-oxlint/ADOPTION.md` with the evidence the standard asks for.
-- `tsgolint` and `tsc` have no `android-arm64` build, so the type-aware lint pass and the
+- `tsrs` and `tsc` have no `android-arm64` build, so the type-aware lint pass and the
   compiler projects run on a host that has them, including `npm run check:compat` in CI.
