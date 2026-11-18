@@ -60,13 +60,13 @@ the generated syntactic-only override; there is no checked-JS project, so the ch
 of the qualification table has nothing to exercise.
 
 Node test registration: `allowForKnownSafeCalls` is empty, so the framework mapping's
-registration controls do not apply to this repository. The harness keeps awaited top-level
-`node:test` registrations, has no context subtests, and retains `ignoreVoid: false`.
+registration controls do not apply to this repository, and the suite retains
+`ignoreVoid: false`.
 
 ## Migration status
 
-Complete. Configuration, profiles, generated override, verifier, acceptance wiring, probe
-harness, and agent instructions all describe the repository as it is now.
+Complete. Configuration, profiles, generated override, verifier, and agent instructions all
+describe the repository as it is now.
 
 ## Quality exceptions
 
