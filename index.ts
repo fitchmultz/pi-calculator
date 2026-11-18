@@ -1,20 +1,9 @@
+import { inspect } from "node:util";
 import { Type } from "typebox";
 import { Text } from "@earendil-works/pi-tui";
 import { defineTool, type ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { DECIMAL_PRECISION } from "./decimal.ts";
 import { evaluateExpression, MAX_EXPRESSION_LENGTH } from "./eval.ts";
-
-const C1_CONTROLS = /[\u007f-\u009f]/g;
-const HEX_RADIX = 16;
-const UNICODE_ESCAPE_WIDTH = 4;
-
-function formatQuotedExpression(expression: string): string {
-	return JSON.stringify(expression).replace(
-		C1_CONTROLS,
-		(char) =>
-			`\\u${char.charCodeAt(0).toString(HEX_RADIX).padStart(UNICODE_ESCAPE_WIDTH, "0")}`,
-	);
-}
 
 const calculatorTool = defineTool({
 	name: "calculator",
@@ -47,7 +36,13 @@ const calculatorTool = defineTool({
 	renderCall(args: { readonly expression?: string }, theme) {
 		return new Text(
 			theme.fg("toolTitle", theme.bold("calculator ")) +
-				theme.fg("muted", formatQuotedExpression(args.expression ?? "")),
+				theme.fg(
+					"muted",
+					inspect(args.expression ?? "", {
+						breakLength: Infinity,
+						maxStringLength: Infinity,
+					}),
+				),
 			0,
 			0,
 		);

@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { findPackageJSON } from "node:module";
 import { pathToFileURL } from "node:url";
 import { deepStrictEqual, rejects } from "node:assert";
-import { stripVTControlCharacters } from "node:util";
+import { inspect, stripVTControlCharacters } from "node:util";
 import {
 	createAgentSession,
 	DefaultResourceLoader,
@@ -70,7 +70,8 @@ function renderCard(
 	if (!rendered.includes("calculator")) {
 		throw new Error("calculator title missing");
 	}
-	if (width === 80 && !rendered.includes(JSON.stringify(expression))) {
+	const quoted = inspect(expression, { breakLength: Infinity, maxStringLength: Infinity });
+	if (width === 80 && !rendered.includes(quoted)) {
 		throw new Error("calculator expression missing or not escaped");
 	}
 	if (!rendered.includes(value)) {
@@ -407,7 +408,7 @@ try {
 		);
 		c1Card.setArgsComplete();
 		const c1Rendered = c1Card.render(80).map(stripVTControlCharacters).join("\n");
-		if (c1Rendered.includes("\u009b") || !c1Rendered.includes('"1+\\u009b31m2"')) {
+		if (c1Rendered.includes("\u009b") || !c1Rendered.includes("'1+\\x9B31m2'")) {
 			throw new Error(`calculator header left raw C1 control characters: ${c1Rendered}`);
 		}
 	} finally {
