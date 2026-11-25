@@ -1,5 +1,22 @@
 # Changelog
 
+## 4.1.21 - 2026-11-25
+
+<!-- npm-release:unreleased:start -->
+<!-- npm-release:unreleased:end -->
+
+- ci: refresh the shared automation pin to 1f78bd6 (PEA-225) (#78) ([d3af628](https://github.com/fitchmultz/pi-calculator/commit/d3af628a09a5ed50d642e265778a75c771ad8b9a))
+
+### What's Changed
+
+- ci: refresh the shared automation pin to 1f78bd6 (PEA-225) by @fitchmultz in https://github.com/fitchmultz/pi-calculator/pull/78
+- ci: pin shared automation to 788061a and pass RELEASE_APP_PRIVATE_KEY by @fitchmultz in https://github.com/fitchmultz/pi-calculator/pull/79
+- docs(agents): remove stale live-runtime activation hold from AGENTS.md by @fitchmultz in https://github.com/fitchmultz/pi-calculator/pull/80
+- chore: enforce 2-day npm min-release-age cooldown by @fitchmultz in https://github.com/fitchmultz/pi-calculator/pull/81
+- chore: raise Pi floor to 1.6.1 (PEA-238) by @fitchmultz in https://github.com/fitchmultz/pi-calculator/pull/82
+
+**Full Changelog**: https://github.com/fitchmultz/pi-calculator/compare/v4.1.20...v4.1.21
+
 ## 4.1.20 - 2026-11-20
 
 <!-- npm-release:unreleased:start -->
