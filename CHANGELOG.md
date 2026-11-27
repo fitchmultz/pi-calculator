@@ -1,5 +1,18 @@
 # Changelog
 
+## 4.1.22 - 2026-11-27
+
+<!-- npm-release:unreleased:start -->
+<!-- npm-release:unreleased:end -->
+
+- chore: raise Pi floor to 1.7.0 (PEA-240) (#83) ([772c279](https://github.com/fitchmultz/pi-calculator/commit/772c279e4a00925dc7b14361c5e4414e7f7b733a))
+
+### What's Changed
+
+- chore: raise Pi floor to 1.7.0 (PEA-240) by @fitchmultz in https://github.com/fitchmultz/pi-calculator/pull/83
+
+**Full Changelog**: https://github.com/fitchmultz/pi-calculator/compare/v4.1.21...v4.1.22
+
 ## 4.1.21 - 2026-11-25
 
 <!-- npm-release:unreleased:start -->
